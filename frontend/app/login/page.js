@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react"; // useEffect masih dipakai di bawah
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
@@ -11,18 +11,9 @@ function AuthForm() {
   const searchParams = useSearchParams();
   const { user, loading: authLoading, signUp, signIn, signInWithGoogle, resetPassword, isConfigured } = useAuth();
 
-  /* baca tab dari query param, default "signup" */
-  const [mode, setMode] = useState(() => {
-    const tab = searchParams.get("tab");
-    return tab === "signin" ? "signin" : "signup";
-  });
-
-  /* sync jika URL berubah */
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab === "signin") setMode("signin");
-    else if (tab === "signup") setMode("signup");
-  }, [searchParams]);
+  /* derive mode langsung dari searchParams, tanpa state terpisah */
+  const tabParam = searchParams.get("tab");
+  const [mode, setMode] = useState(tabParam === "signin" ? "signin" : "signup");
 
   /* Sign Up form */
   const [signupForm, setSignupForm] = useState({
