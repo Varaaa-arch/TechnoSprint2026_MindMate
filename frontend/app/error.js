@@ -9,7 +9,7 @@ export default function Error({ error, reset }) {
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-linear-to-b from-purple-50 to-white flex items-center justify-center px-6">
       <div className="text-center max-w-md">
         <div className="mb-8">
           <div className="text-6xl mb-4">😔</div>

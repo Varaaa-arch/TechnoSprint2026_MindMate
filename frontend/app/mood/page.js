@@ -226,7 +226,7 @@ export default function MoodPage() {
         <div className="grid grid-cols-2 gap-4 mb-10">
           {/* Tips */}
           <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
@@ -241,7 +241,7 @@ export default function MoodPage() {
 
           {/* Statistik */}
           <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -278,7 +278,7 @@ export default function MoodPage() {
                 return (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-2xl bg-gray-50">
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0"
                       style={{ background: m?.bg ?? "#f3f4f6" }}
                     >
                       {m?.emoji ?? "😐"}

@@ -203,7 +203,7 @@ function AuthForm() {
 
               {/* Email */}
               <div className="flex items-center bg-[#1e1e1e] border border-white/10 rounded-xl px-4 py-3 gap-3">
-                <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -219,7 +219,7 @@ function AuthForm() {
 
               {/* Nomor HP */}
               <div className="flex items-center bg-[#1e1e1e] border border-white/10 rounded-xl px-4 py-3 gap-3">
-                <div className="flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
+                <div className="flex items-center gap-1.5 shrink-0 cursor-pointer">
                   <span className="text-lg">🇮🇩</span>
                   <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -238,7 +238,7 @@ function AuthForm() {
 
               {/* Password */}
               <div className="flex items-center bg-[#1e1e1e] border border-white/10 rounded-xl px-4 py-3 gap-3">
-                <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -280,7 +280,7 @@ function AuthForm() {
             <form onSubmit={handleSignin} className="space-y-3">
               {/* Email */}
               <div className="flex items-center bg-[#1e1e1e] border border-white/10 rounded-xl px-4 py-3 gap-3">
-                <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -297,7 +297,7 @@ function AuthForm() {
 
               {/* Password */}
               <div className="flex items-center bg-[#1e1e1e] border border-white/10 rounded-xl px-4 py-3 gap-3">
-                <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>

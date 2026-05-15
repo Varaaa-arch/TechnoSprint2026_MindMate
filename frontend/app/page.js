@@ -57,7 +57,7 @@ export default function Home() {
 
       {/* ── PHONE MOCKUP BANNER ── */}
       <section className="max-w-6xl mx-auto px-6 pb-16">
-        <div className="relative rounded-3xl bg-gradient-to-br from-[#1a4a4a] via-[#1e5c5c] to-[#0f3333] shadow-2xl" style={{minHeight: 420}}>
+        <div className="relative rounded-3xl bg-linear-to-br from-[#1a4a4a] via-[#1e5c5c] to-[#0f3333] shadow-2xl" style={{minHeight: 420}}>
 
           {/* decorative circles */}
           <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-teal-600/30 blur-2xl"></div>
@@ -67,9 +67,9 @@ export default function Home() {
           <div className="relative z-10 flex items-end justify-center gap-4 px-8 pt-10">
 
             {/* Phone Left */}
-            <div className="w-44 h-80 bg-[#0d2e2e] rounded-3xl border-4 border-[#1a4040] shadow-2xl flex-shrink-0 overflow-hidden"
+            <div className="w-44 h-80 bg-[#0d2e2e] rounded-3xl border-4 border-[#1a4040] shadow-2xl shrink-0 overflow-hidden"
               style={{transform: "rotate(-8deg) translateY(20px)"}}>
-              <div className="h-full bg-gradient-to-b from-[#0d3535] to-[#0a2525] flex flex-col items-center justify-center p-4">
+              <div className="h-full bg-linear-to-b from-[#0d3535] to-[#0a2525] flex flex-col items-center justify-center p-4">
                 <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center mb-3">
                   <svg className="w-8 h-8 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -83,7 +83,7 @@ export default function Home() {
             </div>
 
             {/* Phone Center */}
-            <div className="w-52 h-96 bg-white rounded-3xl border-4 border-gray-200 shadow-2xl flex-shrink-0 overflow-hidden z-10">
+            <div className="w-52 h-96 bg-white rounded-3xl border-4 border-gray-200 shadow-2xl shrink-0 overflow-hidden z-10">
               <div className="bg-gray-50 px-4 pt-3 pb-2 flex items-center justify-between">
                 <span className="text-[10px] text-gray-400 font-medium">9:41</span>
                 <div className="w-16 h-4 bg-gray-200 rounded-full"></div>
@@ -125,9 +125,9 @@ export default function Home() {
             </div>
 
             {/* Phone Right */}
-            <div className="w-44 h-80 bg-[#0d2e2e] rounded-3xl border-4 border-[#1a4040] shadow-2xl flex-shrink-0 overflow-hidden"
+            <div className="w-44 h-80 bg-[#0d2e2e] rounded-3xl border-4 border-[#1a4040] shadow-2xl shrink-0 overflow-hidden"
               style={{transform: "rotate(8deg) translateY(20px)"}}>
-              <div className="h-full bg-gradient-to-b from-[#0d3535] to-[#0a2525] flex flex-col items-center justify-center p-4">
+              <div className="h-full bg-linear-to-b from-[#0d3535] to-[#0a2525] flex flex-col items-center justify-center p-4">
                 <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
                   <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -189,7 +189,7 @@ export default function Home() {
 
           {/* Center phone image */}
           <div className="bg-gray-800 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center min-h-[280px] relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-gray-700 to-gray-900"></div>
             <div className="relative z-10 flex flex-col items-center justify-center h-full py-6">
               <div className="w-32 h-56 bg-white rounded-2xl shadow-2xl border-4 border-gray-600 overflow-hidden">
                 <div className="bg-indigo-600 h-10 flex items-center justify-center">
@@ -265,7 +265,7 @@ export default function Home() {
           </div>
 
           {/* CTA Card */}
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white relative overflow-hidden">
+          <div className="bg-linear-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white relative overflow-hidden">
             <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
             <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-purple-800/30 rounded-full"></div>
 
@@ -309,7 +309,7 @@ export default function Home() {
           </blockquote>
 
           <div className="flex items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-300 to-pink-400 flex items-center justify-center text-white font-bold text-sm">S</div>
+            <div className="w-10 h-10 rounded-full bg-linear-to-br from-orange-300 to-pink-400 flex items-center justify-center text-white font-bold text-sm">S</div>
             <div className="text-left">
               <p className="text-sm font-bold text-gray-900">Sarah Amalia</p>
               <p className="text-xs text-gray-400">Pengguna Aktif MindMate</p>
