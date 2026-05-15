@@ -1,0 +1,1 @@
+"""MindMate FastAPI application."""
