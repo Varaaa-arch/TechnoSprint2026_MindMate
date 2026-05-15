@@ -130,7 +130,7 @@ export default function ChatPage() {
       <div className="flex flex-1 max-w-[1200px] w-full mx-auto px-4 py-5 gap-4" style={{height:"calc(100vh - 65px)"}}>
 
         {/* ══ LEFT SIDEBAR ══ */}
-        <aside className="w-60 flex-shrink-0 flex flex-col gap-3">
+        <aside className="w-60 shrink-0 flex flex-col gap-3">
           {/* New Session button */}
           <button className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-2xl shadow-md transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,7 +171,7 @@ export default function ChatPage() {
                   <button
                     onClick={(e) => handleDeleteSession(e, s.id)}
                     title="Hapus sesi"
-                    className={`flex-shrink-0 mr-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                    className={`shrink-0 mr-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
                       activeSession === s.id
                         ? "bg-white/20 hover:bg-white/40 text-white"
                         : "bg-red-100 hover:bg-red-200 text-red-500 hover:text-red-700"
@@ -200,7 +200,7 @@ export default function ChatPage() {
 
           {/* Pro Insights banner */}
           <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
               <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
@@ -223,7 +223,7 @@ export default function ChatPage() {
                   /* ── Bot message ── */
                   <div className="flex items-start gap-3">
                     {/* Bot avatar */}
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
                       <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                       </svg>
@@ -243,7 +243,7 @@ export default function ChatPage() {
                               onClick={() => sendMessage(s.title)}
                               className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-3 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-left shadow-sm"
                             >
-                              <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0 text-base">
+                              <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 text-base">
                                 {s.icon}
                               </div>
                               <div>
@@ -289,7 +289,7 @@ export default function ChatPage() {
           <div className="border-t border-gray-100 px-4 py-3">
             <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5">
               {/* Emoji */}
-              <button type="button" className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+              <button type="button" className="text-gray-400 hover:text-gray-600 shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -305,7 +305,7 @@ export default function ChatPage() {
               />
 
               {/* Mic */}
-              <button type="button" className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+              <button type="button" className="text-gray-400 hover:text-gray-600 shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
@@ -315,7 +315,7 @@ export default function ChatPage() {
               <button
                 type="submit"
                 disabled={!input.trim() || thinking}
-                className="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl flex items-center justify-center flex-shrink-0 transition-colors shadow-sm"
+                className="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -331,7 +331,7 @@ export default function ChatPage() {
         </main>
 
         {/* ══ RIGHT PANEL ══ */}
-        <aside className="w-56 flex-shrink-0 flex flex-col gap-4">
+        <aside className="w-56 shrink-0 flex flex-col gap-4">
 
           {/* Current Vibe */}
           <div className="bg-white rounded-3xl shadow-sm p-5">
@@ -353,7 +353,7 @@ export default function ChatPage() {
             <div className="space-y-2.5">
               {/* Completed */}
               <div className="flex items-center gap-2.5">
-                <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center shrink-0">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
@@ -362,7 +362,7 @@ export default function ChatPage() {
               </div>
               {/* Pending */}
               <div className="flex items-center gap-2.5">
-                <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0"></div>
+                <div className="w-5 h-5 rounded-full border-2 border-gray-300 shrink-0"></div>
                 <p className="text-xs text-gray-400">Evening Reflection</p>
               </div>
             </div>
@@ -371,14 +371,14 @@ export default function ChatPage() {
           {/* Featured Exercise */}
           <div className="rounded-3xl overflow-hidden shadow-sm relative" style={{minHeight:120}}>
             {/* Forest background */}
-            <div className="absolute inset-0 bg-gradient-to-b from-green-800 to-green-950">
+            <div className="absolute inset-0 bg-linear-to-b from-green-800 to-green-950">
               {/* Simulated forest silhouette */}
               <div className="absolute bottom-0 left-0 right-0 h-16 flex items-end justify-around px-2">
                 {[28,40,32,48,36,44,30,38].map((h,i) => (
                   <div key={i} className="bg-green-900/80 rounded-t-full" style={{width:14, height:h}}></div>
                 ))}
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
             </div>
             <div className="relative z-10 p-4 flex flex-col justify-end h-full" style={{minHeight:120}}>
               <p className="text-[9px] text-green-300 font-semibold uppercase tracking-wider mb-0.5">Featured Exercise</p>
