@@ -15,6 +15,7 @@ import { Line } from "react-chartjs-2";
 import Navbar from "../components/Navbar";
 import AuthGuard from "../components/AuthGuard";
 import Link from "next/link";
+import api from "../../lib/api";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -47,36 +48,46 @@ export default function MoodPage() {
   const [selected, setSelected]   = useState(null);
   const [note, setNote]           = useState("");
   const [saved, setSaved]         = useState(false);
+  const [saving, setSaving]       = useState(false);
   const [history, setHistory]     = useState([]);
 
-  /* load history dari localStorage */
+  /* load history dari API */
   useEffect(() => {
     let active = true;
-    const load = () => {
-      try {
-        const raw = localStorage.getItem("mindmate_mood_history");
-        if (raw && active) setHistory(JSON.parse(raw));
-      } catch { /* ignore */ }
-    };
-    load();
+    api.getMoodHistory(30)
+      .then((data) => {
+        if (!active) return;
+        // data bisa array langsung atau { history: [...] }
+        const list = Array.isArray(data) ? data : (data.history ?? data.entries ?? []);
+        // normalise: pastikan tiap entry punya field `date` dan `mood`
+        const normalised = list.map((h) => ({
+          date: h.entry_date ?? h.date ?? h.created_at?.split("T")[0] ?? "",
+          mood: h.mood,
+          note: h.note ?? "",
+        }));
+        setHistory(normalised);
+      })
+      .catch(() => { /* backend belum jalan */ });
     return () => { active = false; };
   }, []);
 
-  const saveHistory = (updated) => {
-    setHistory(updated);
-    try { localStorage.setItem("mindmate_mood_history", JSON.stringify(updated)); } catch { /* ignore */ }
-  };
-
-  const handleSave = () => {
-    if (!selected) return;
+  const handleSave = async () => {
+    if (!selected || saving) return;
     const today = new Date().toISOString().split("T")[0];
-    const entry = { date: today, mood: selected, note };
-    const updated = [entry, ...history.filter((h) => h.date !== today)];
-    saveHistory(updated);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-    setNote("");
-    setSelected(null);
+    setSaving(true);
+    try {
+      await api.saveMood({ mood: selected, note, entry_date: today });
+      const entry = { date: today, mood: selected, note };
+      setHistory((prev) => [entry, ...prev.filter((h) => h.date !== today)]);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      setNote("");
+      setSelected(null);
+    } catch {
+      /* gagal simpan — bisa tambah toast error di sini */
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* streak hitung */
@@ -209,11 +220,11 @@ export default function MoodPage() {
           <div className="flex justify-end mt-4">
             <button
               onClick={handleSave}
-              disabled={!selected}
+              disabled={!selected || saving}
               className="flex items-center gap-2 px-7 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors shadow-md"
             >
-              {saved ? "Tersimpan ✓" : "Simpan Mood"}
-              {!saved && (
+              {saved ? "Tersimpan ✓" : saving ? "Menyimpan..." : "Simpan Mood"}
+              {!saved && !saving && (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>

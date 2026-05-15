@@ -3,80 +3,37 @@
 import { useState, useRef, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import AuthGuard from "../components/AuthGuard";
+import api from "../../lib/api";
 
-/* ─── static data ─── */
-const DEFAULT_SESSIONS = [
-  { id: 1, title: "Navigating Work Stress",       time: "2 hours ago"  },
-  { id: 2, title: "Mindful Morning Check-in",     time: "Yesterday"    },
-  { id: 3, title: "Overcoming Procrastination",   time: "Mar 12, 2024" },
-];
-
-const INITIAL_MESSAGES = [
-  {
-    id: 1,
-    role: "bot",
-    text: "Hi Alex, it's good to see you again. How are you feeling after our last conversation about managing those workplace deadlines?",
-  },
-  {
-    id: 2,
-    role: "user",
-    text: "I'm feeling a bit better, but I'm still struggling with a sense of overwhelm in the mornings. It feels like as soon as I wake up, my mind starts racing with everything I have to do.",
-  },
-  {
-    id: 3,
-    role: "bot",
-    text: `That morning rush of thoughts can be really draining. It sounds like your "survival brain" is kicking in a bit early. Would you like to try a quick 2-minute grounding exercise, or should we talk more about what those specific morning thoughts look like?`,
-    suggestions: [
-      {
-        icon: "🧘",
-        title: "Grounding Exercise",
-        desc: "A quick 5-4-3-2-1 technique to settle your mind.",
-      },
-      {
-        icon: "🔍",
-        title: "Explore the Thoughts",
-        desc: "Identify the root causes of morning anxiety.",
-      },
-    ],
-  },
-];
-
-const BOT_RESPONSES = [
-  "Terima kasih sudah berbagi. Saya di sini untuk mendengarkan. Ceritakan lebih lanjut tentang apa yang kamu rasakan.",
-  "Itu terdengar cukup berat. Wajar sekali merasa seperti itu. Apa yang biasanya membantu kamu merasa lebih tenang?",
-  "Saya mengerti. Perasaan itu valid. Mari kita coba eksplorasi bersama apa yang bisa membantu situasimu.",
-  "Kamu sudah melakukan hal yang luar biasa dengan mau berbicara tentang ini. Langkah kecil itu penting.",
-];
+const INITIAL_BOT_MESSAGE = {
+  id: 1,
+  role: "bot",
+  text: "Halo! Saya MindMate AI. Bagaimana perasaanmu hari ini? Saya siap mendengarkan. 😊",
+};
 
 export default function ChatPage() {
-  const [messages, setMessages]     = useState(INITIAL_MESSAGES);
-  const [input, setInput]           = useState("");
-  const [thinking, setThinking]     = useState(false);
-  const [activeSession, setActive]  = useState(1);
+  const [messages, setMessages]   = useState([INITIAL_BOT_MESSAGE]);
+  const [input, setInput]         = useState("");
+  const [thinking, setThinking]   = useState(false);
+  const [sessions, setSessions]   = useState([]);
+  const [activeSession, setActive]= useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [msgCounter, setMsgCounter] = useState(INITIAL_MESSAGES.length + 1);
-  const [sessions, setSessions]     = useState(DEFAULT_SESSIONS);
-  const bottomRef                   = useRef(null);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const bottomRef = useRef(null);
 
-  /* ── Sync sessions dengan localStorage ── */
-  const saveSessions = (updated) => {
-    setSessions(updated);
-    try { localStorage.setItem("mindmate_sessions", JSON.stringify(updated)); } catch { /* ignore */ }
-  };
-
-  /* ── Load dari localStorage setelah mount ── */
+  /* ── Load chat history dari API ── */
   useEffect(() => {
     let active = true;
-    const load = () => {
-      try {
-        const saved = localStorage.getItem("mindmate_sessions");
-        if (saved && active) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) setSessions(parsed);
-        }
-      } catch { /* ignore */ }
-    };
-    load();
+    api.getChatHistory()
+      .then((data) => {
+        if (!active) return;
+        // data bisa berupa { sessions: [...] } atau array langsung
+        const list = Array.isArray(data) ? data : (data.sessions ?? []);
+        setSessions(list);
+        if (list.length > 0) setActive(list[0].id);
+      })
+      .catch(() => { /* backend belum jalan, biarkan kosong */ })
+      .finally(() => { if (active) setLoadingHistory(false); });
     return () => { active = false; };
   }, []);
 
@@ -85,20 +42,26 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
 
-  const sendMessage = (text) => {
+  const sendMessage = async (text) => {
     if (!text.trim()) return;
-    const nextId = msgCounter;
-    setMsgCounter((c) => c + 2);
-    const userMsg = { id: nextId, role: "user", text: text.trim() };
+    const userMsg = { id: Date.now(), role: "user", text: text.trim() };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setThinking(true);
 
-    setTimeout(() => {
-      const reply = BOT_RESPONSES[Math.floor(Math.random() * BOT_RESPONSES.length)];
-      setMessages((prev) => [...prev, { id: nextId + 1, role: "bot", text: reply }]);
+    try {
+      const data = await api.sendMessage(text.trim());
+      // backend mengembalikan { reply: "..." } atau { message: "..." }
+      const reply = data.reply ?? data.message ?? data.response ?? "Maaf, saya tidak bisa merespons saat ini.";
+      setMessages((prev) => [...prev, { id: Date.now() + 1, role: "bot", text: reply }]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, role: "bot", text: "Maaf, terjadi kesalahan. Coba lagi sebentar ya." },
+      ]);
+    } finally {
       setThinking(false);
-    }, 1800);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -106,18 +69,15 @@ export default function ChatPage() {
     sendMessage(input);
   };
 
-  /* delete a session */
   const handleDeleteSession = (e, id) => {
-    e.stopPropagation(); // jangan trigger setActive
+    e.stopPropagation();
     setDeleteConfirm(id);
   };
 
   const confirmDelete = (id) => {
     const updated = sessions.filter((s) => s.id !== id);
-    saveSessions(updated);
-    if (activeSession === id) {
-      setActive(updated.length > 0 ? updated[0].id : null);
-    }
+    setSessions(updated);
+    if (activeSession === id) setActive(updated.length > 0 ? updated[0].id : null);
     setDeleteConfirm(null);
   };
 
@@ -143,7 +103,12 @@ export default function ChatPage() {
           <div>
             <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase px-1 mb-2">Recent Sessions</p>
             <div className="space-y-1">
-              {sessions.map((s) => (
+              {loadingHistory && (
+                <div className="px-4 py-6 text-center">
+                  <p className="text-xs text-gray-400">Memuat sesi...</p>
+                </div>
+              )}
+              {!loadingHistory && sessions.map((s) => (
                 <div
                   key={s.id}
                   className={`flex items-center gap-2 rounded-2xl transition-colors ${
@@ -186,7 +151,7 @@ export default function ChatPage() {
               ))}
 
               {/* Empty state */}
-              {sessions.length === 0 && (
+              {!loadingHistory && sessions.length === 0 && (
                 <div className="px-4 py-6 text-center">
                   <p className="text-xs text-gray-400">Belum ada sesi.</p>
                   <p className="text-xs text-gray-400">Mulai sesi baru di atas.</p>
