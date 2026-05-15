@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 
 from app.schemas.chat import ChatResponse, EmotionLabel
-from app.services.store import get_store
+from app.repositories import get_repository
 
 FALLBACK_REPLIES = [
     "Terima kasih sudah berbagi. Saya di sini untuk mendengarkan. Ceritakan lebih lanjut tentang apa yang kamu rasakan.",
@@ -60,7 +60,7 @@ def generate_reply(message: str, emotion: EmotionLabel) -> str:
 
 
 def process_chat(user_id: str, message: str) -> ChatResponse:
-    store = get_store()
+    store = get_repository()
     emotion, stress_level = detect_emotion(message)
 
     store.add_chat_message(user_id, "user", message)

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     ai_provider: str = "openai"
 
+    # Storage: auto (supabase if configured) | memory | supabase
+    storage_backend: str = "auto"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
@@ -44,6 +47,16 @@ class Settings(BaseSettings):
         if self.ai_provider == "anthropic":
             return self.anthropic_configured
         return self.openai_configured
+
+    @property
+    def effective_storage(self) -> str:
+        mode = self.storage_backend.strip().lower()
+        if mode == "memory":
+            return "in_memory"
+        if mode == "supabase":
+            return "supabase"
+        # auto — use Supabase when credentials exist
+        return "supabase" if self.supabase_configured else "in_memory"
 
 
 @lru_cache

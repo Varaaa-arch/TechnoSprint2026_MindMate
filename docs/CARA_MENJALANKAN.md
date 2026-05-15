@@ -1,4 +1,4 @@
-# 🚀 Cara Menjalankan MindMate
+# Cara Menjalankan MindMate
 
 ## Langkah Cepat (5 Menit)
 
@@ -15,7 +15,7 @@ cd C:\Users\acer\Downloads\project-technosprint\TechnoSprint2026_MindMate\fronte
 ```bash
 npm install
 ```
-⏱️ Tunggu 2-3 menit sampai selesai
+Tunggu 2-3 menit sampai selesai.
 
 ### 4. Jalankan Aplikasi
 ```bash
@@ -23,51 +23,42 @@ npm run dev
 ```
 
 ### 5. Buka di Browser
-Buka browser dan ketik:
-```
 http://localhost:3000
-```
-
-## ✅ Selesai!
-
-Aplikasi MindMate sudah berjalan! 🎉
 
 ---
 
-## 📱 Halaman yang Bisa Diakses
+## Halaman yang Bisa Diakses
 
 | Halaman | Link |
 |---------|------|
-| **Landing Page** | http://localhost:3000 |
-| **Chat AI** | http://localhost:3000/chat |
-| **Mood Tracker** | http://localhost:3000/mood |
-| **Dashboard** | http://localhost:3000/dashboard |
+| Landing Page | http://localhost:3000 |
+| Chat AI | http://localhost:3000/chat |
+| Mood Tracker | http://localhost:3000/mood |
+| Dashboard | http://localhost:3000/dashboard |
 
 ---
 
-## 🛑 Cara Menghentikan Aplikasi
+## Cara Menghentikan Aplikasi
 
 Di terminal/command prompt, tekan:
-```
 Ctrl + C
-```
 
 ---
 
-## ❓ Jika Ada Masalah
+## Jika Ada Masalah
 
 ### Error: "npm not found"
-**Solusi:** Install Node.js dulu dari https://nodejs.org/
+Install Node.js dulu dari https://nodejs.org/
 
 ### Error: "Port 3000 sudah digunakan"
-**Solusi:** Gunakan port lain
+Gunakan port lain:
 ```bash
 npm run dev -- -p 3001
 ```
 Lalu buka: http://localhost:3001
 
 ### Error saat npm install
-**Solusi:** Hapus folder node_modules dan coba lagi
+Hapus folder node_modules dan coba lagi:
 ```bash
 rmdir /s /q node_modules
 npm install
@@ -75,9 +66,8 @@ npm install
 
 ---
 
-## 📖 Dokumentasi Lengkap
+## Dokumentasi Lengkap
 
-Untuk informasi lebih detail:
 - **QUICKSTART.md** - Panduan cepat lengkap
 - **INSTALLATION.md** - Panduan instalasi detail
 - **SUMMARY.md** - Ringkasan semua fitur
@@ -85,19 +75,19 @@ Untuk informasi lebih detail:
 
 ---
 
-## 🎯 Yang Sudah Dibuat
+## Yang Sudah Dibuat
 
-✅ **Landing Page** - Halaman utama dengan hero section, fitur, testimonial
-✅ **Chat Page** - Chat dengan AI yang interaktif
-✅ **Mood Tracker** - Catat mood harian dengan 6 pilihan emoji
-✅ **Dashboard** - Lihat insights dan statistik mood
-✅ **Navbar** - Navigasi di semua halaman
-✅ **Footer** - Footer dengan links
-✅ **Loading & Error Pages** - Halaman loading dan error handling
+- Landing Page - Halaman utama dengan hero section, fitur, testimonial
+- Chat Page - Chat dengan AI yang interaktif
+- Mood Tracker - Catat mood harian dengan 6 pilihan emoji
+- Dashboard - Lihat insights dan statistik mood
+- Navbar - Navigasi di semua halaman
+- Footer - Footer dengan links
+- Loading & Error Pages - Halaman loading dan error handling
 
 ---
 
-## 💻 Teknologi yang Digunakan
+## Teknologi yang Digunakan
 
 - **Next.js 16.2.4** - Framework React
 - **React 19.2.4** - Library UI
@@ -106,7 +96,7 @@ Untuk informasi lebih detail:
 
 ---
 
-## 🎨 Fitur yang Bisa Dicoba
+## Fitur yang Bisa Dicoba
 
 ### Landing Page
 - Klik tombol "Mulai Konsultasi Gratis"
@@ -118,7 +108,7 @@ Untuk informasi lebih detail:
 - Lihat response dari AI (simulasi)
 
 ### Mood Page
-- Pilih mood (😊 😌 😐 😔 😰 😡)
+- Pilih mood (Senang, Tenang, Biasa, Sedih, Cemas, Marah)
 - Tambah catatan
 - Simpan dan lihat riwayat
 
@@ -129,25 +119,19 @@ Untuk informasi lebih detail:
 
 ---
 
-## 🚀 Next Steps
+## Next Steps
 
-1. ✅ Jalankan aplikasi
-2. ✅ Explore semua halaman
-3. ✅ Coba fitur-fitur interaktif
-4. ✅ Customize sesuai kebutuhan
-5. ✅ Deploy ke production (Vercel/Netlify)
+1. Jalankan aplikasi
+2. Explore semua halaman
+3. Coba fitur-fitur interaktif
+4. Customize sesuai kebutuhan
+5. Deploy ke production (Vercel/Netlify)
 
 ---
 
-## 📞 Butuh Bantuan?
+## Butuh Bantuan?
 
 Baca dokumentasi lengkap di:
 - QUICKSTART.md
 - INSTALLATION.md
 - SUMMARY.md
-
----
-
-**Selamat Mencoba! 🎉**
-
-Dibuat dengan ❤️ untuk TechnoSprint 2026

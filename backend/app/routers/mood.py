@@ -9,7 +9,7 @@ from app.schemas.mood import (
     MoodResponse,
     MoodStatsResponse,
 )
-from app.services.store import get_store
+from app.repositories import get_repository
 
 router = APIRouter(prefix="/api/mood", tags=["mood"])
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/mood", tags=["mood"])
 @router.post("", response_model=MoodResponse)
 def save_mood(payload: MoodRequest) -> MoodResponse:
     entry_date = payload.entry_date or date.today()
-    record = get_store().upsert_mood(
+    record = get_repository().upsert_mood(
         payload.user_id,
         payload.mood,
         payload.note,
@@ -31,7 +31,7 @@ def get_mood_history(
     user_id: str,
     days: int = Query(default=30, ge=1, le=365),
 ) -> MoodHistoryResponse:
-    records = get_store().get_mood_history(user_id, days=days)
+    records = get_repository().get_mood_history(user_id, days=days)
     entries = [
         MoodEntryOut(
             id=r.id,
@@ -48,5 +48,5 @@ def get_mood_history(
 
 @router.get("/stats/{user_id}", response_model=MoodStatsResponse)
 def get_mood_stats(user_id: str) -> MoodStatsResponse:
-    stats = get_store().get_mood_stats(user_id)
+    stats = get_repository().get_mood_stats(user_id)
     return MoodStatsResponse(user_id=user_id, **stats)

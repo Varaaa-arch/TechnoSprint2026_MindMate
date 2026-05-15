@@ -11,7 +11,8 @@ from app.schemas.insights import (
     RecommendationsResponse,
     WeeklyReportResponse,
 )
-from app.services.store import MOOD_SCORES, get_store
+from app.models.domain import MOOD_SCORES
+from app.repositories import get_repository
 
 DAY_NAMES = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 WEEK_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]
@@ -26,7 +27,7 @@ RECOMMENDATIONS_BY_MOOD = {
 
 
 def build_insights(user_id: str) -> InsightResponse:
-    store = get_store()
+    store = get_repository()
     stats = store.get_mood_stats(user_id)
     history = store.get_mood_history(user_id, days=14)
     highlights: list[str] = []
@@ -63,7 +64,7 @@ def build_insights(user_id: str) -> InsightResponse:
 
 
 def build_weekly_report(user_id: str) -> WeeklyReportResponse:
-    store = get_store()
+    store = get_repository()
     today = date.today()
     week_data = []
     scores = []
@@ -93,7 +94,7 @@ def build_weekly_report(user_id: str) -> WeeklyReportResponse:
 
 
 def build_recommendations(user_id: str) -> RecommendationsResponse:
-    store = get_store()
+    store = get_repository()
     history = store.get_mood_history(user_id, days=7)
     items: list[RecommendationItem] = []
 
