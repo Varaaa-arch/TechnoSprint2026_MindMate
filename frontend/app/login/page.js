@@ -4,11 +4,12 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
+import { authErrorMessage } from "../../lib/auth";
 
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { user, loading: authLoading, signUp, signIn, signInWithGoogle, resetPassword, isConfigured } = useAuth();
 
   /* baca tab dari query param, default "signup" */
   const [mode, setMode] = useState(() => {
@@ -25,14 +26,19 @@ function AuthForm() {
 
   /* Sign Up form */
   const [signupForm, setSignupForm] = useState({
-    firstName: "", lastName: "", email: "", phone: "",
+    firstName: "", lastName: "", email: "", phone: "", password: "",
   });
 
   /* Sign In form */
   const [signinForm, setSigninForm] = useState({ email: "", password: "" });
 
-  const [error, setError]     = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState("");
+  const [info, setInfo]         = useState("");
+  const [loading, setLoading]   = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) router.replace("/chat");
+  }, [user, authLoading, router]);
 
   /* ── handlers ── */
   const handleSignupChange = (e) =>
@@ -44,44 +50,89 @@ function AuthForm() {
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
-    const { firstName, email, phone } = signupForm;
-    if (!firstName || !email || !phone) {
-      setError("Please fill in all required fields.");
+    setInfo("");
+    const { firstName, email, phone, password } = signupForm;
+    if (!firstName || !email || !phone || !password) {
+      setError("Lengkapi semua field wajib.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password minimal 6 karakter.");
+      return;
+    }
+    if (!isConfigured) {
+      setError("Supabase belum dikonfigurasi. Cek file .env.local");
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 700));
     try {
-      const existing = localStorage.getItem("mindmate_reg_" + email);
-      if (existing) { setError("Email already registered. Please sign in."); setLoading(false); return; }
-      const userData = { ...signupForm, password: "default" };
-      localStorage.setItem("mindmate_reg_" + email, JSON.stringify(userData));
-      login({ name: firstName + " " + (signupForm.lastName || ""), email });
-      router.push("/");
-    } catch { setError("Something went wrong. Please try again."); }
+      const data = await signUp({
+        email,
+        password,
+        firstName,
+        lastName: signupForm.lastName,
+        phone,
+      });
+      if (data.session) {
+        router.push("/chat");
+      } else {
+        setInfo("Cek email kamu untuk konfirmasi akun, lalu masuk.");
+        setMode("signin");
+      }
+    } catch (err) {
+      setError(authErrorMessage(err));
+    }
     setLoading(false);
   };
 
   const handleSignin = async (e) => {
     e.preventDefault();
     setError("");
+    setInfo("");
     const { email, password } = signinForm;
-    if (!email || !password) { setError("Please fill in all fields."); return; }
+    if (!email || !password) {
+      setError("Lengkapi email dan password.");
+      return;
+    }
+    if (!isConfigured) {
+      setError("Supabase belum dikonfigurasi. Cek file .env.local");
+      return;
+    }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 700));
     try {
-      const stored = localStorage.getItem("mindmate_reg_" + email);
-      if (!stored) { setError("Email not found. Please sign up first."); setLoading(false); return; }
-      const user = JSON.parse(stored);
-      if (user.password !== password && password !== "default") {
-        setError("Incorrect password.");
-        setLoading(false);
-        return;
-      }
-      login({ name: user.firstName + " " + (user.lastName || ""), email });
-      router.push("/");
-    } catch { setError("Something went wrong. Please try again."); }
+      await signIn({ email, password });
+      router.push("/chat");
+    } catch (err) {
+      setError(authErrorMessage(err));
+    }
     setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    setError("");
+    setInfo("");
+    const email = signinForm.email;
+    if (!email) {
+      setError("Masukkan email dulu, lalu klik lupa password.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await resetPassword(email);
+      setInfo("Link reset password dikirim ke email kamu.");
+    } catch (err) {
+      setError(authErrorMessage(err));
+    }
+    setLoading(false);
+  };
+
+  const handleGoogle = async () => {
+    setError("");
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      setError(authErrorMessage(err));
+    }
   };
 
   return (
@@ -126,6 +177,9 @@ function AuthForm() {
 
             {error && (
               <p className="mb-4 text-xs text-red-400 bg-red-900/30 border border-red-800 rounded-xl px-3 py-2">{error}</p>
+            )}
+            {info && (
+              <p className="mb-4 text-xs text-emerald-400 bg-emerald-900/30 border border-emerald-800 rounded-xl px-3 py-2">{info}</p>
             )}
 
             <form onSubmit={handleSignup} className="space-y-3">
@@ -182,6 +236,23 @@ function AuthForm() {
                 />
               </div>
 
+              {/* Password */}
+              <div className="flex items-center bg-[#1e1e1e] border border-white/10 rounded-xl px-4 py-3 gap-3">
+                <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <input
+                  type="password"
+                  name="password"
+                  value={signupForm.password}
+                  onChange={handleSignupChange}
+                  placeholder="Password (min. 6 karakter)"
+                  className="flex-1 bg-transparent text-white placeholder-gray-500 text-sm focus:outline-none"
+                  autoComplete="new-password"
+                />
+              </div>
+
               {/* Submit */}
               <button
                 type="submit"
@@ -201,6 +272,9 @@ function AuthForm() {
 
             {error && (
               <p className="mb-4 text-xs text-red-400 bg-red-900/30 border border-red-800 rounded-xl px-3 py-2">{error}</p>
+            )}
+            {info && (
+              <p className="mb-4 text-xs text-emerald-400 bg-emerald-900/30 border border-emerald-800 rounded-xl px-3 py-2">{info}</p>
             )}
 
             <form onSubmit={handleSignin} className="space-y-3">
@@ -239,7 +313,11 @@ function AuthForm() {
               </div>
 
               <div className="flex justify-end">
-                <button type="button" className="text-xs text-gray-400 hover:text-white transition-colors">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-xs text-gray-400 hover:text-white transition-colors"
+                >
                   Lupa password?
                 </button>
               </div>
@@ -266,7 +344,11 @@ function AuthForm() {
         {/* Social buttons */}
         <div className="grid grid-cols-2 gap-3">
           {/* Google */}
-          <button className="flex items-center justify-center py-3 bg-[#1e1e1e] hover:bg-[#2a2a2a] border border-white/10 rounded-xl transition-colors">
+          <button
+            type="button"
+            onClick={handleGoogle}
+            className="flex items-center justify-center py-3 bg-[#1e1e1e] hover:bg-[#2a2a2a] border border-white/10 rounded-xl transition-colors"
+          >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

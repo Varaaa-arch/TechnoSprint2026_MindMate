@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import AuthGuard from "../components/AuthGuard";
 
 /* ─── static data ─── */
 const DEFAULT_SESSIONS = [
@@ -121,6 +122,7 @@ export default function ChatPage() {
   };
 
   return (
+    <AuthGuard>
     <div className="min-h-screen bg-[#f0f2f8] flex flex-col">
       <Navbar />
 
@@ -444,5 +446,6 @@ export default function ChatPage() {
         </div>
       )}
     </div>
+    </AuthGuard>
   );
 }

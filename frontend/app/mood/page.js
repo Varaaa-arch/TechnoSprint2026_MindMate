@@ -13,6 +13,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import Navbar from "../components/Navbar";
+import AuthGuard from "../components/AuthGuard";
 import Link from "next/link";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
@@ -144,6 +145,7 @@ export default function MoodPage() {
   };
 
   return (
+    <AuthGuard>
     <div className="min-h-screen bg-[#f5f5fb] flex flex-col">
       <Navbar />
 
@@ -311,5 +313,6 @@ export default function MoodPage() {
         </div>
       </footer>
     </div>
+    </AuthGuard>
   );
 }

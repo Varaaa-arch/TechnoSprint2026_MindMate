@@ -1,7 +1,14 @@
-// API Base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// API client — sends Supabase access token when available
 
-// API Client
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+let authTokenGetter = null;
+
+/** Register async function that returns current JWT (from AuthContext). */
+export function setAuthTokenGetter(getter) {
+  authTokenGetter = getter;
+}
+
 class ApiClient {
   constructor(baseURL = API_BASE_URL) {
     this.baseURL = baseURL;
@@ -9,75 +16,81 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
+    const headers = {
+      "Content-Type": "application/json",
+      ...options.headers,
     };
 
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    if (authTokenGetter) {
+      try {
+        const token = await authTokenGetter();
+        if (token) headers.Authorization = `Bearer ${token}`;
+      } catch {
+        /* ignore */
       }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
     }
+
+    const config = { ...options, headers };
+
+    const response = await fetch(url, config);
+    const body = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const detail = body.detail || body.message || `HTTP ${response.status}`;
+      const err = new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+      err.status = response.status;
+      throw err;
+    }
+
+    return body;
   }
 
-  // Chat endpoints
-  async sendMessage(message, userId) {
-    return this.request('/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({ message, user_id: userId }),
+  async sendMessage(message) {
+    return this.request("/api/chat", {
+      method: "POST",
+      body: JSON.stringify({ message }),
     });
   }
 
-  async getChatHistory(userId) {
-    return this.request(`/api/chat/history/${userId}`);
+  async getChatHistory() {
+    return this.request("/api/chat/history");
   }
 
-  // Mood endpoints
-  async saveMood(moodData) {
-    return this.request('/api/mood', {
-      method: 'POST',
-      body: JSON.stringify(moodData),
+  async saveMood({ mood, note, entry_date }) {
+    return this.request("/api/mood", {
+      method: "POST",
+      body: JSON.stringify({ mood, note, entry_date }),
     });
   }
 
-  async getMoodHistory(userId, days = 30) {
-    return this.request(`/api/mood/history/${userId}?days=${days}`);
+  async getMoodHistory(days = 30) {
+    return this.request(`/api/mood/history?days=${days}`);
   }
 
-  async getMoodStats(userId) {
-    return this.request(`/api/mood/stats/${userId}`);
+  async getMoodStats() {
+    return this.request("/api/mood/stats");
   }
 
-  // Insights endpoints
-  async getInsights(userId) {
-    return this.request(`/api/insights/${userId}`);
+  async getInsights() {
+    return this.request("/api/insights");
   }
 
-  async getWeeklyReport(userId) {
-    return this.request(`/api/insights/weekly/${userId}`);
+  async getWeeklyReport() {
+    return this.request("/api/insights/weekly");
   }
 
-  async getRecommendations(userId) {
-    return this.request(`/api/insights/recommendations/${userId}`);
+  async getRecommendations() {
+    return this.request("/api/insights/recommendations");
+  }
+
+  async getMe() {
+    return this.request("/api/auth/me");
   }
 }
 
-// Export singleton instance
 const api = new ApiClient();
 export default api;
 
-// Export individual functions for convenience
 export const {
   sendMessage,
   getChatHistory,
@@ -87,4 +100,5 @@ export const {
   getInsights,
   getWeeklyReport,
   getRecommendations,
+  getMe,
 } = api;

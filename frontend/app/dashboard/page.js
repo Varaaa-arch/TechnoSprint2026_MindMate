@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "../components/Navbar";
+import AuthGuard from "../components/AuthGuard";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -150,6 +151,7 @@ export default function DashboardPage() {
   ];
 
   return (
+    <AuthGuard>
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-100">
       <Navbar />
       
@@ -314,5 +316,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+    </AuthGuard>
   );
 }
