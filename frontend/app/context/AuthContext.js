@@ -103,6 +103,20 @@ export function AuthProvider({ children }) {
     if (error) throw error;
   }, []);
 
+  const signInWithDiscord = useCallback(async () => {
+    if (!supabase) throw new Error("Supabase belum dikonfigurasi.");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: {
+        redirectTo:
+          typeof window !== "undefined"
+            ? `${window.location.origin}/auth/callback`
+            : undefined,
+      },
+    });
+    if (error) throw error;
+  }, []);
+
   const resetPassword = useCallback(async (email) => {
     if (!supabase) throw new Error("Supabase belum dikonfigurasi.");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -134,6 +148,7 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       signInWithGoogle,
+      signInWithDiscord,
       resetPassword,
       logout,
       getAccessToken,
@@ -145,6 +160,7 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       signInWithGoogle,
+      signInWithDiscord,
       resetPassword,
       logout,
       getAccessToken,
