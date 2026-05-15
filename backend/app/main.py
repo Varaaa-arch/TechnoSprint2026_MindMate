@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.core.exceptions import RepositoryError, SupabaseNotConfiguredError
-from app.routers import chat, health, insights, mood
+from app.routers import auth, chat, health, insights, mood
 
 
 @asynccontextmanager
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health.router)
+    app.include_router(auth.router)
     app.include_router(chat.router)
     app.include_router(mood.router)
     app.include_router(insights.router)

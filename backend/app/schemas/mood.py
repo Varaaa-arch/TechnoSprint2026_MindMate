@@ -7,7 +7,6 @@ MoodId = Literal["senang", "tenang", "biasa", "stres", "sedih", "cemas", "marah"
 
 
 class MoodRequest(BaseModel):
-    user_id: str = Field(..., min_length=1, max_length=128)
     mood: MoodId
     note: str | None = Field(default=None, max_length=2000)
     entry_date: date | None = Field(

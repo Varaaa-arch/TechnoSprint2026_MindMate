@@ -18,6 +18,10 @@ class Settings(BaseSettings):
 
     supabase_url: str | None = None
     supabase_service_role_key: str | None = None
+    supabase_jwt_secret: str | None = None
+
+    # Require Bearer token on /api/* (set false for local dev without login)
+    require_auth: bool = True
 
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
@@ -47,6 +51,10 @@ class Settings(BaseSettings):
         if self.ai_provider == "anthropic":
             return self.anthropic_configured
         return self.openai_configured
+
+    @property
+    def auth_enabled(self) -> bool:
+        return self.require_auth and self.supabase_configured
 
     @property
     def effective_storage(self) -> str:

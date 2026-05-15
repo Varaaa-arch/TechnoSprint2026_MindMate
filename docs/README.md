@@ -10,6 +10,7 @@ Index semua dokumentasi proyek.
 |---------|-----|
 | **[BACKEND.md](./BACKEND.md)** | Penjelasan lengkap backend FastAPI — struktur folder, config, setiap lapisan, alur data, store, emosi, insight, roadmap |
 | **[SUPABASE.md](./SUPABASE.md)** | Schema PostgreSQL, RLS, RPC, setup env, repository Supabase |
+| **[AUTH.md](./AUTH.md)** | Supabase Auth: login, JWT, protected API |
 | **[api-docs.md](./api-docs.md)** | Referensi endpoint: request/response, contoh curl |
 | **[architecture.md](./architecture.md)** | Diagram sistem, BFF pattern, komponen, data flow |
 

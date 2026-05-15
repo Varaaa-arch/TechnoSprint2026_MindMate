@@ -1,5 +1,8 @@
-from fastapi import APIRouter
+from typing import Annotated
 
+from fastapi import APIRouter, Depends
+
+from app.core.auth import get_current_user_id
 from app.schemas.insights import (
     InsightResponse,
     RecommendationsResponse,
@@ -14,16 +17,22 @@ from app.services.insights_service import (
 router = APIRouter(prefix="/api/insights", tags=["insights"])
 
 
-@router.get("/weekly/{user_id}", response_model=WeeklyReportResponse)
-def get_weekly_report(user_id: str) -> WeeklyReportResponse:
+@router.get("/weekly", response_model=WeeklyReportResponse)
+def get_weekly_report(
+    user_id: Annotated[str, Depends(get_current_user_id)],
+) -> WeeklyReportResponse:
     return build_weekly_report(user_id)
 
 
-@router.get("/recommendations/{user_id}", response_model=RecommendationsResponse)
-def get_recommendations(user_id: str) -> RecommendationsResponse:
+@router.get("/recommendations", response_model=RecommendationsResponse)
+def get_recommendations(
+    user_id: Annotated[str, Depends(get_current_user_id)],
+) -> RecommendationsResponse:
     return build_recommendations(user_id)
 
 
-@router.get("/{user_id}", response_model=InsightResponse)
-def get_insights(user_id: str) -> InsightResponse:
+@router.get("", response_model=InsightResponse)
+def get_insights(
+    user_id: Annotated[str, Depends(get_current_user_id)],
+) -> InsightResponse:
     return build_insights(user_id)
