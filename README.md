@@ -7,7 +7,7 @@
 
 MindMate adalah aplikasi kesehatan mental berbasis AI yang menyediakan dukungan emosional 24/7, pelacakan mood, dan wawasan mendalam tentang kesehatan mental pengguna.
 
-## 🌟 Fitur Utama
+## Fitur Utama
 
 ### 1. **AI Chat yang Berempati**
 - Chatbot AI yang dirancang khusus untuk memahami dan merespons perasaan pengguna
@@ -26,7 +26,7 @@ MindMate adalah aplikasi kesehatan mental berbasis AI yang menyediakan dukungan 
 - Wawasan personal berdasarkan pola mood
 - Rekomendasi aktivitas untuk meningkatkan kesehatan mental
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
@@ -53,7 +53,7 @@ uvicorn app.main:app --reload
 
 API akan berjalan di `http://localhost:8000`
 
-## 📁 Struktur Proyek
+## Struktur Proyek
 
 ```
 TechnoSprint2026_MindMate/
@@ -83,7 +83,7 @@ TechnoSprint2026_MindMate/
 └── README.md
 ```
 
-## 🎨 Halaman yang Telah Dibuat
+## Halaman yang Telah Dibuat
 
 ### 1. Landing Page (/)
 - Hero section dengan tagline dan CTA
@@ -112,7 +112,7 @@ TechnoSprint2026_MindMate/
 - 4 wawasan personal
 - Rekomendasi aktivitas
 
-## 🎨 Design System
+## Design System
 
 ### Warna
 - **Primary**: Indigo (#4F46E5)
@@ -130,7 +130,7 @@ TechnoSprint2026_MindMate/
 - Consistent padding: 4, 6, 8, 12
 - Gap between elements: 4, 6, 8
 
-## 🔧 Teknologi
+## Teknologi
 
 ### Frontend
 - **Next.js 16.2.4** - React framework dengan App Router
@@ -143,44 +143,21 @@ TechnoSprint2026_MindMate/
 - **Supabase** - Database dan authentication
 - **AI Service** - Integrasi dengan AI model
 
-## 📱 Responsive Design
+## Responsive Design
 
 Semua halaman telah dioptimasi untuk:
-- 📱 Mobile (< 768px)
-- 💻 Tablet (768px - 1024px)
-- 🖥️ Desktop (> 1024px)
+- Mobile (< 768px)
+- Tablet (768px - 1024px)
+- Desktop (> 1024px)
 
-## 🎯 Fitur Interaktif
+## Fitur Interaktif
 
-- ✅ Hover effects pada semua buttons dan cards
-- ✅ Smooth transitions dan animations
-- ✅ Form validation
-- ✅ Dynamic content updates
-- ✅ Gradient backgrounds
-- ✅ Icon animations
-
-## 🔜 Roadmap
-
-### Phase 1 (Completed) ✅
-- [x] Landing page design
-- [x] Chat interface
-- [x] Mood tracker
-- [x] Dashboard insights
-- [x] Responsive design
-
-### Phase 2 (Next)
-- [ ] Backend API integration
-- [ ] User authentication
-- [ ] Real AI chat implementation
-- [ ] Database integration
-- [ ] Real-time updates
-
-### Phase 3 (Future)
-- [ ] Mobile app (React Native)
-- [ ] Push notifications
-- [ ] Advanced analytics
-- [ ] Social features
-- [ ] Professional consultation booking
+- Hover effects pada semua buttons dan cards
+- Smooth transitions dan animations
+- Form validation
+- Dynamic content updates
+- Gradient backgrounds
+- Icon animations
 
 ## 📖 Dokumentasi
 
@@ -189,21 +166,19 @@ Untuk dokumentasi lebih lengkap, lihat:
 - [API Documentation](./docs/api-docs.md)
 - [Architecture](./docs/architecture.md)
 
-## 🤝 Kontribusi
+## Kontribusi
 
 Proyek ini dibuat untuk TechnoSprint 2026. 
 
-## 📄 Lisensi
+## Lisensi
 
 Copyright © 2026 MindMate Team. All rights reserved.
 
-## 📞 Kontak
+## Kontak
 
 Untuk pertanyaan atau dukungan, silakan hubungi tim pengembang.
 
 ---
-
-**Dibuat dengan ❤️ untuk kesehatan mental yang lebih baik**
 
 MindMate adalah aplikasi AI-powered mood tracker dan chat companion yang membantu pengguna:
 
