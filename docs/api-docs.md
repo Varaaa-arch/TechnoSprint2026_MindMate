@@ -1,124 +1,83 @@
 # MindMate API Reference
 
-Dokumentasi endpoint backend FastAPI. Base URL development:
+Base URL development: `http://localhost:8000`
 
-```
-http://localhost:8000
-```
+Swagger UI interaktif: **http://localhost:8000/docs**
 
-Dokumentasi interaktif (Swagger): **http://localhost:8000/docs**
-
-Penjelasan arsitektur & alur internal: [BACKEND.md](./BACKEND.md)
+Semua endpoint `/api/*` memerlukan header `Authorization: Bearer <supabase_access_token>`.  
+Untuk dev tanpa auth, set `REQUIRE_AUTH=false` di `backend/.env`.
 
 ---
 
 ## Health
 
-### `GET /`
-
-Cek cepat API hidup.
-
-**Response 200**
-
-```json
-{
-  "message": "MindMate API is running"
-}
-```
-
----
-
 ### `GET /health`
-
-Status detail untuk monitoring.
-
-**Response 200**
 
 ```json
 {
   "status": "ok",
   "app": "MindMate API",
   "version": "0.1.0",
-  "supabase_configured": false,
-  "ai_configured": false,
-  "storage": "in_memory"
+  "supabase_configured": true,
+  "ai_configured": true,
+  "storage": "supabase"
 }
 ```
-
-| Field | Arti |
-|-------|------|
-| `supabase_configured` | `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` terisi |
-| `ai_configured` | API key AI sesuai `AI_PROVIDER` terisi |
-| `storage` | `in_memory` atau `supabase` |
 
 ---
 
 ## Chat
 
-Prefix: `/api/chat`
-
 ### `POST /api/chat`
 
-Kirim pesan, dapat balasan + analisis emosi.
+Kirim pesan, dapat balasan empatik + analisis emosi dari GPT-4o-mini.
 
-**Request body**
+**Request**
+```json
+{ "message": "aku cemas banget soal ujian" }
+```
 
+**Response**
 ```json
 {
-  "message": "gue capek banget hidup",
-  "user_id": "user-123"
+  "reply": "Kecemasan menjelang ujian itu wajar banget...",
+  "emotion": "anxiety",
+  "stress_level": 7,
+  "message_id": "uuid"
 }
 ```
 
-| Field | Tipe | Wajib | Keterangan |
-|-------|------|-------|------------|
-| `message` | string | ya | 1–4000 karakter |
-| `user_id` | string | ya | ID unik user (email/UUID) |
-
-**Response 200**
-
-```json
-{
-  "reply": "Sepertinya kamu mengalami kelelahan yang cukup dalam. ...",
-  "emotion": "burnout",
-  "stress_level": 8,
-  "message_id": "590edf23-9591-496d-be4b-a3ab20207f98"
-}
-```
-
-**Nilai `emotion` yang valid**
-
-`happy` | `sad` | `anxiety` | `burnout` | `neutral` | `anger` | `calm`
-
-**Error 422** — validasi gagal (pesan kosong, dll.)
+| Field | Keterangan |
+|-------|------------|
+| `emotion` | `happy` \| `sad` \| `anxiety` \| `burnout` \| `neutral` \| `anger` \| `calm` |
+| `stress_level` | 1–10 (1=sangat tenang, 10=krisis) |
 
 ---
 
-### `GET /api/chat/history/{user_id}`
+### `GET /api/chat/history`
 
 Riwayat percakapan user (maks. 100 pesan terakhir).
 
-**Response 200**
-
+**Response**
 ```json
 {
-  "user_id": "user-123",
+  "user_id": "uuid",
   "messages": [
     {
       "id": "uuid",
       "role": "user",
-      "content": "gue capek banget",
+      "content": "aku cemas banget",
       "emotion": null,
       "stress_level": null,
-      "created_at": "2026-05-15T10:00:00Z"
+      "created_at": "2026-05-16T10:00:00Z"
     },
     {
       "id": "uuid",
       "role": "assistant",
-      "content": "Sepertinya kamu mengalami...",
-      "emotion": "burnout",
-      "stress_level": 8,
-      "created_at": "2026-05-15T10:00:01Z"
+      "content": "Kecemasan itu wajar...",
+      "emotion": "anxiety",
+      "stress_level": 7,
+      "created_at": "2026-05-16T10:00:01Z"
     }
   ]
 }
@@ -128,135 +87,80 @@ Riwayat percakapan user (maks. 100 pesan terakhir).
 
 ## Mood
 
-Prefix: `/api/mood`
-
 ### `POST /api/mood`
 
-Simpan atau update mood harian (satu entri per user per tanggal).
+Simpan atau update mood hari ini (upsert per user per tanggal).
 
-**Request body**
-
+**Request**
 ```json
 {
-  "user_id": "user-123",
-  "mood": "stres",
-  "note": "Deadline besok",
-  "entry_date": "2026-05-15"
+  "mood": "cemas",
+  "note": "deadline besok",
+  "entry_date": "2026-05-16"
 }
 ```
 
-| Field | Tipe | Wajib | Keterangan |
-|-------|------|-------|------------|
-| `user_id` | string | ya | |
-| `mood` | string | ya | Lihat daftar mood di bawah |
-| `note` | string | tidak | Maks. 2000 karakter |
-| `entry_date` | date (YYYY-MM-DD) | tidak | Default: hari ini |
+Nilai `mood` valid: `senang` | `tenang` | `biasa` | `stres` | `sedih` | `cemas` | `marah`
 
-**Nilai `mood` yang valid**
-
-`senang` | `tenang` | `biasa` | `stres` | `sedih` | `cemas` | `marah`
-
-**Response 200**
-
+**Response**
 ```json
-{
-  "status": "success",
-  "entry_id": "50f74273-739d-4671-a789-d31d21aab52a",
-  "date": "2026-05-15"
-}
+{ "status": "success", "entry_id": "uuid", "date": "2026-05-16" }
 ```
 
 ---
 
-### `GET /api/mood/history/{user_id}`
+### `GET /api/mood/history?days=30`
 
-**Query parameters**
-
-| Param | Default | Range |
-|-------|---------|-------|
-| `days` | 30 | 1–365 |
-
-**Response 200**
-
-```json
-{
-  "user_id": "user-123",
-  "days": 30,
-  "entries": [
-    {
-      "id": "uuid",
-      "user_id": "user-123",
-      "mood": "stres",
-      "note": "Deadline besok",
-      "entry_date": "2026-05-15",
-      "created_at": "2026-05-15T08:30:00Z"
-    }
-  ]
-}
-```
+Riwayat mood N hari terakhir (default 30, max 365).
 
 ---
 
-### `GET /api/mood/stats/{user_id}`
+### `GET /api/mood/stats`
 
-Statistik agregat dari semua entri mood user.
+Statistik agregat mood user.
 
-**Response 200**
-
+**Response**
 ```json
 {
-  "user_id": "user-123",
-  "total_entries": 5,
-  "streak_days": 3,
-  "positive_percent": 40.0,
-  "average_score": 3.2,
-  "dominant_mood": "biasa"
+  "user_id": "uuid",
+  "total_entries": 12,
+  "streak_days": 4,
+  "positive_percent": 58.3,
+  "average_score": 3.6,
+  "dominant_mood": "tenang"
 }
 ```
-
-| Field | Arti |
-|-------|------|
-| `streak_days` | Hari berturut-turut ada entri, dihitung mundur dari hari ini |
-| `positive_percent` | % mood `senang` + `tenang` |
-| `average_score` | Rata-rata skor 1–5 (lihat BACKEND.md) |
-| `dominant_mood` | Mood paling sering, atau `null` jika belum ada data |
 
 ---
 
 ## Insights
 
-Prefix: `/api/insights`
+### `GET /api/insights`
 
-> Route `/weekly/...` dan `/recommendations/...` harus dipanggil dengan path lengkap (bukan sebagai `user_id`).
+Ringkasan + highlight rule-based dari pola mood & chat.
 
-### `GET /api/insights/{user_id}`
-
-Ringkasan + highlight personal.
-
-**Response 200**
-
+**Response**
 ```json
 {
-  "user_id": "user-123",
-  "summary": "Mood kamu stabil dengan rata-rata skor 3.2/5.",
+  "user_id": "uuid",
+  "summary": "Mood kamu stabil dengan rata-rata skor 3.6/5.",
   "highlights": [
-    "Kamu sudah mencatat mood 3 hari berturut-turut.",
-    "Mood kamu cenderung lebih rendah di hari Jumat."
+    "Mood kamu cenderung lebih rendah di hari Senin (2x dalam 2 minggu terakhir).",
+    "3 hari berturut-turut kamu terdeteksi merasa cemas dalam percakapan."
   ]
 }
 ```
 
 ---
 
-### `GET /api/insights/weekly/{user_id}`
+### `GET /api/insights/weekly`
 
-Laporan 7 hari terakhir untuk grafik dashboard.
+Data tren 7 hari untuk line chart dashboard.
 
-**Response 200**
-
+**Response**
 ```json
 {
-  "user_id": "user-123",
+  "user_id": "uuid",
   "week_label": "7 hari terakhir",
   "average_mood_score": 3.5,
   "mood_trend": [
@@ -270,46 +174,53 @@ Laporan 7 hari terakhir untuk grafik dashboard.
 
 ---
 
-### `GET /api/insights/recommendations/{user_id}`
+### `GET /api/insights/recommendations`
 
-Rekomendasi aktivitas berdasarkan mood & chat terakhir.
+Rekomendasi aktivitas berdasarkan emotion chat + mood tracker terakhir.
 
-**Response 200**
-
+**Response**
 ```json
 {
-  "user_id": "user-123",
+  "user_id": "uuid",
   "recommendations": [
     {
-      "id": "rec-stres",
+      "id": "rec-cemas-0",
       "type": "breathing",
-      "title": "Latihan Pernapasan",
-      "description": "Coba teknik 4-7-8 selama 2 menit untuk menurunkan stres.",
-      "reason": "Berdasarkan mood terakhir: stres"
+      "title": "Grounding 5-4-3-2-1",
+      "description": "Sebut 5 hal yang kamu lihat...",
+      "duration_minutes": 5,
+      "reason": "Terdeteksi dari percakapan: anxiety"
     }
   ]
 }
 ```
 
-**Tipe rekomendasi (`type`)**
-
-`breathing` | `journaling` | `exercise` | `mindfulness` | dll.
+Tipe: `breathing` | `journaling` | `exercise` | `mindfulness`
 
 ---
 
-## CORS & frontend
+### `GET /api/insights/daily-summary`
 
-Frontend Next.js memanggil API dari origin berbeda. Pastikan `backend/.env`:
+Ringkasan harian AI — di-generate sekali per hari, di-cache di DB.
 
-```env
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+**Response**
+```json
+{
+  "user_id": "uuid",
+  "summary_date": "2026-05-16",
+  "summary_text": "Hari ini kamu banyak merasakan kecemasan...",
+  "mood_score_avg": 3.2,
+  "dominant_emotion": "anxiety",
+  "highlights": ["Streak 4 hari mencatat mood!"],
+  "generated_by": "openai",
+  "from_cache": false
+}
 ```
 
-Frontend `.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
+| Field | Keterangan |
+|-------|------------|
+| `generated_by` | `openai` atau `rule_engine` |
+| `from_cache` | `true` jika sudah di-generate hari ini |
 
 ---
 
@@ -319,16 +230,18 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 # Health
 curl http://localhost:8000/health
 
-# Chat
+# Chat (tanpa auth)
 curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
-  -d '{"message":"aku cemas banget","user_id":"demo"}'
+  -d '{"message":"aku cemas banget"}'
 
 # Mood
 curl -X POST http://localhost:8000/api/mood \
   -H "Content-Type: application/json" \
-  -d '{"user_id":"demo","mood":"cemas","note":"ujian"}'
+  -H "Authorization: Bearer <token>" \
+  -d '{"mood":"cemas","note":"ujian besok"}'
 
-# Insights
-curl http://localhost:8000/api/insights/demo
+# Daily Summary
+curl http://localhost:8000/api/insights/daily-summary \
+  -H "Authorization: Bearer <token>"
 ```

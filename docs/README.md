@@ -1,53 +1,48 @@
-# Dokumentasi MindMate
+# MindMate — Dokumentasi
 
-Index semua dokumentasi proyek.
-
----
-
-## Backend (baru)
+## Mulai dari sini
 
 | Dokumen | Isi |
 |---------|-----|
-| **[BACKEND.md](./BACKEND.md)** | Penjelasan lengkap backend FastAPI — struktur folder, config, setiap lapisan, alur data, store, emosi, insight, roadmap |
-| **[SUPABASE.md](./SUPABASE.md)** | Schema PostgreSQL, RLS, RPC, setup env, repository Supabase |
-| **[AUTH.md](./AUTH.md)** | Supabase Auth: login, JWT, protected API |
-| **[api-docs.md](./api-docs.md)** | Referensi endpoint: request/response, contoh curl |
-| **[architecture.md](./architecture.md)** | Diagram sistem, BFF pattern, komponen, data flow |
-
-Mulai dari sini kalau mau paham **akar-akar** backend: [BACKEND.md](./BACKEND.md)
-
----
-
-## Setup & menjalankan
-
-| Dokumen | Isi |
-|---------|-----|
-| [START_HERE.md](./START_HERE.md) | Titik awal project |
-| [CARA_MENJALANKAN.md](./CARA_MENJALANKAN.md) | Panduan Bahasa Indonesia |
-| [INSTALLATION.md](./INSTALLATION.md) | Instalasi detail |
-| [QUICKSTART.md](./QUICKSTART.md) | Quick start |
-| [DEPLOYMENT.md](./DEPLOYMENT.md) | Deploy Vercel/Render |
+| [architecture.md](./architecture.md) | Tech stack, pola arsitektur, data flow, env vars |
+| [api-docs.md](./api-docs.md) | Referensi semua endpoint + contoh request/response |
+| [CARA_MENJALANKAN.md](./CARA_MENJALANKAN.md) | Cara run frontend + backend lokal |
+| [SUPABASE.md](./SUPABASE.md) | Setup database, schema, RLS, RPC |
+| [AUTH.md](./AUTH.md) | Supabase Auth, JWT, protected routes |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Deploy ke Vercel + Render |
 
 ---
 
-## Frontend & project
-
-| Dokumen | Isi |
-|---------|-----|
-| [SUMMARY.md](./SUMMARY.md) | Ringkasan fitur UI yang sudah dibuat |
-| [CHECKLIST.md](./CHECKLIST.md) | Checklist progress |
-| [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) | Struktur folder repo |
-
----
-
-## Quick: jalankan backend
+## Quick start
 
 ```bash
+# Backend
 cd backend
-cp .env.example .env
+cp .env.example .env   # isi OPENAI_API_KEY minimal
 source venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload
+
+# Frontend (terminal baru)
+cd frontend
+cp .env.example .env.local   # isi NEXT_PUBLIC_API_URL=http://localhost:8000
+npm install
+npm run dev
 ```
 
-Docs interaktif: http://localhost:8000/docs
+- Frontend: http://localhost:3000
+- Backend + Swagger: http://localhost:8000/docs
+
+---
+
+## Fitur yang sudah jalan
+
+| Fitur | Keterangan |
+|-------|------------|
+| AI Chat | GPT-4o-mini, system prompt empatik Bahasa Indonesia |
+| Emotion + Stress Score | Structured JSON dari model, disimpan ke DB |
+| Mood Tracker | Catat mood harian, chart 7 hari, statistik real |
+| Dashboard | Data nyata dari API — trend, distribusi, insights |
+| Rule-based Insights | Deteksi hari mood rendah, streak emosi negatif |
+| Smart Recommendations | Berdasarkan emotion chat + mood terakhir, prioritas signal |
+| Daily AI Summary | Generate sekali sehari, cache di DB, fallback rule-based |

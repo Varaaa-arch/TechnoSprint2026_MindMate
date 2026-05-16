@@ -1,195 +1,151 @@
-# MindMate Architecture
-
-Dokumen ini menjelaskan arsitektur sistem MindMate secara keseluruhan, termasuk backend FastAPI yang sudah diimplementasikan.
-
-Untuk detail per file backend, baca: **[BACKEND.md](./BACKEND.md)**
-
----
-
-## Overview
-
-MindMate adalah aplikasi web untuk pendampingan kesehatan mental:
-
-- Chat dengan AI (respon empatik + deteksi emosi)
-- Pelacakan mood harian
-- Dashboard insight & rekomendasi
-
----
+# MindMate — Architecture
 
 ## Tech Stack
 
 | Lapisan | Teknologi | Status |
 |---------|-----------|--------|
-| Frontend | Next.js (App Router) | UI lengkap |
-| Backend | FastAPI (Python) | API + logika bisnis |
-| Database | Supabase (PostgreSQL) | Direncanakan; dev pakai in-memory |
-| AI | OpenAI / Anthropic | Direncanakan; dev pakai rule-based fallback |
-| Deploy | Vercel + Render | Direncanakan |
+| Frontend | Next.js 15 (App Router) | ✅ Production-ready |
+| Backend | FastAPI (Python 3.10+) | ✅ Production-ready |
+| Database | Supabase (PostgreSQL) | ✅ Schema + RLS sudah ada |
+| AI | OpenAI GPT-4o-mini | ✅ Aktif (fallback rule-based) |
+| Deploy | Vercel + Render | 🔜 Siap deploy |
 
 ---
 
-## Architecture Pattern: Backend-for-Frontend (BFF)
+## Pattern: Backend-for-Frontend (BFF)
 
-Frontend **tidak** langsung ke Supabase atau OpenAI. Semua lewat FastAPI:
+Frontend tidak langsung ke Supabase atau OpenAI. Semua lewat FastAPI.
 
 ```
-┌──────────────┐
-│   Browser    │
-│  (Next.js)   │
-└──────┬───────┘
-       │ HTTPS / JSON
+Browser (Next.js)
+       │
+       │ REST JSON + Bearer token
        ▼
-┌──────────────┐     ┌─────────────┐     ┌──────────────┐
-│   FastAPI    │────►│  In-Memory  │     │   OpenAI     │
-│   (BFF)      │     │  atau       │     │   (nanti)    │
-│              │────►│  Supabase   │     └──────────────┘
-└──────────────┘     └─────────────┘
+   FastAPI BFF
+   ├── Validasi & auth (Supabase JWT)
+   ├── Business logic (insights, recommendations)
+   ├── OpenAI GPT-4o-mini (chat + daily summary)
+   └── Supabase PostgreSQL (storage)
 ```
 
-**Alasan BFF:**
-
-- Secret API key hanya di server
-- Satu tempat validasi, rate limit, logging
-- Frontend tetap sederhana (`lib/api.js`)
+Keuntungan: API key tidak pernah ke browser, satu titik validasi, frontend tetap tipis.
 
 ---
 
-## Backend internal (lapisan)
+## Lapisan Backend
 
 ```
-HTTP Request
-     │
-     ▼
-┌─────────┐   validasi    ┌──────────┐
-│ Router  │──────────────►│  Schema  │  (Pydantic)
-└────┬────┘               └──────────┘
-     │
-     ▼
-┌─────────┐   bisnis      ┌──────────┐
-│ Service │──────────────►│  Store   │  (RAM / DB)
-└─────────┘               └──────────┘
-     │
-     ▼
- JSON Response
+Request → Router → Service → Repository → DB/AI
+                ↕
+            Schema (Pydantic)
 ```
 
-| Router | Service | Store |
-|--------|---------|-------|
-| `health.py` | — | — |
-| `chat.py` | `chat_service.py` | chat messages |
-| `mood.py` | — (langsung store) | mood entries |
-| `insights.py` | `insights_service.py` | baca chat + mood |
+| Router | Service | Keterangan |
+|--------|---------|------------|
+| `chat.py` | `chat_service.py` | OpenAI structured JSON output |
+| `mood.py` | — | Langsung ke repository |
+| `insights.py` | `insights_service.py` + `daily_summary_service.py` | Rule-based + OpenAI |
+| `auth.py` | — | Supabase JWT verify |
+| `health.py` | — | Status check |
+
+### Repository pattern
+
+Dua implementasi dengan interface yang sama (`DataRepository` Protocol):
+
+- `SupabaseRepository` — production, data persisten
+- `MemoryRepository` — dev fallback, data hilang saat restart
+
+Switch otomatis via `STORAGE_BACKEND=auto` di `.env`.
 
 ---
 
-## System Components
+## Database (Supabase PostgreSQL)
 
-### 1. Frontend (Next.js)
-
-- Halaman: `/`, `/chat`, `/mood`, `/dashboard`, `/login`
-- `lib/api.js` — HTTP client ke backend
-- Auth sementara: `localStorage` (`AuthContext`)
-- Beberapa halaman masih mock data — wiring ke API = langkah berikutnya
-
-### 2. Backend (FastAPI) — **sudah ada**
-
-- Entry: `backend/app/main.py`
-- Config: `backend/.env` (lihat `.env.example`)
-- Endpoint prefix `/api/*` selaras frontend
-- Mode dev: **in-memory store** (data hilang saat restart server)
-
-### 3. Database (Supabase) — **rencana**
-
-Tabel yang direncanakan:
+Tabel utama:
 
 | Tabel | Isi |
 |-------|-----|
-| `profiles` | Data user |
-| `mood_entries` | Mood harian |
-| `chat_messages` | Riwayat chat + emotion |
+| `profiles` | User profile, terhubung ke Supabase Auth |
+| `chat_sessions` | Sesi percakapan per user |
+| `chat_messages` | Pesan + `emotion` + `stress_level` dari model |
+| `mood_entries` | Mood harian, upsert per user per tanggal |
+| `daily_summaries` | Cache ringkasan AI harian |
 
-Klien sudah disiapkan di `services/supabase_client.py`, belum dipakai router.
-
-### 4. AI Service — **rencana**
-
-- Saat ini: keyword emotion + template balasan (`chat_service.py`)
-- Nanti: `OPENAI_API_KEY` → `generate_reply()` panggil Chat Completions API
+RLS aktif — user hanya bisa akses data miliknya sendiri.
 
 ---
 
-## Data Flow: Chat
+## AI Features
 
+### Chat (GPT-4o-mini)
+- System prompt empatik Bahasa Indonesia, non-diagnostic
+- `response_format: json_object` → satu call return `reply` + `emotion` + `stress_level`
+- Fallback ke reply statis jika key tidak ada
+
+### Daily Summary (GPT-4o-mini)
+- Di-generate sekali per hari, di-cache di `daily_summaries`
+- Input: mood hari ini + topik percakapan hari ini
+- Fallback ke rule-based summary
+
+### Insights & Recommendations (Rule-based)
+- Deteksi hari dengan mood rendah berulang (≥2x/14 hari)
+- Deteksi streak emosi negatif dari chat (≥2 hari berturut)
+- Rekomendasi aktivitas berdasarkan emotion chat + mood tracker, dedup by type
+
+---
+
+## Data Flow
+
+### Chat
 ```
-1. User ketik pesan di /chat
-2. Frontend POST /api/chat { message, user_id }
-3. FastAPI validasi ChatRequest
-4. chat_service.process_chat():
-   a. detect_emotion(message)
-   b. simpan pesan user ke store
-   c. generate_reply()
-   d. simpan balasan assistant + emotion + stress_level
-5. Response JSON → tampil di UI
+User kirim pesan
+→ POST /api/chat
+→ chat_service: kirim ke OpenAI dengan history 10 pesan terakhir
+→ parse JSON: reply + emotion + stress_level
+→ simpan ke chat_messages
+→ return ke frontend
 ```
 
-## Data Flow: Mood
-
+### Dashboard load
 ```
-1. User pilih mood di /mood
-2. Frontend POST /api/mood { user_id, mood, note }
-3. store.upsert_mood() — satu entri per tanggal
-4. GET /api/mood/stats & /api/insights/* untuk dashboard
+Frontend: 5 request paralel (Promise.allSettled)
+  ├── GET /api/insights/weekly      → line chart
+  ├── GET /api/insights             → highlights
+  ├── GET /api/insights/recommendations → aktivitas
+  ├── GET /api/mood/stats           → stat cards
+  └── GET /api/insights/daily-summary  → AI summary card
 ```
 
 ---
 
-## Environment & Security
+## Environment Variables
 
-| Secret | Lokasi | Catatan |
-|--------|--------|---------|
-| `OPENAI_API_KEY` | `backend/.env` | Hanya server |
-| `SUPABASE_SERVICE_ROLE_KEY` | `backend/.env` | Hanya server |
-| `NEXT_PUBLIC_API_URL` | `frontend/.env.local` | Bukan rahasia |
+**`backend/.env`**
+```env
+OPENAI_API_KEY=sk-...          # Wajib untuk AI features
+SUPABASE_URL=https://...       # Wajib untuk production
+SUPABASE_SERVICE_ROLE_KEY=...  # Wajib untuk production
+SUPABASE_JWT_SECRET=...        # Wajib untuk auth
+REQUIRE_AUTH=true              # false untuk dev tanpa login
+STORAGE_BACKEND=auto           # auto | memory | supabase
+AI_PROVIDER=openai             # openai | anthropic
+```
 
-Jangan commit `.env` — sudah di `.gitignore`.
-
-CORS: backend mengizinkan origin frontend (`CORS_ORIGINS`).
+**`frontend/.env.local`**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_SUPABASE_URL=https://...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
 
 ---
 
-## Deployment (rencana)
+## Deployment
 
 ```
-Vercel          →  Next.js frontend
-Render/Railway  →  FastAPI (Dockerfile di backend/)
-Supabase Cloud  →  PostgreSQL
+Vercel          → Next.js frontend (auto-deploy dari main)
+Render/Railway  → FastAPI (Dockerfile di backend/)
+Supabase Cloud  → PostgreSQL + Auth
 ```
 
-`docker-compose.yml` di root untuk develop lokal (frontend + backend).
-
----
-
-## Diagram lengkap (target produksi)
-
-```mermaid
-flowchart LR
-  User[User Browser]
-  FE[Next.js Frontend]
-  API[FastAPI BFF]
-  DB[(Supabase Postgres)]
-  AI[OpenAI API]
-
-  User --> FE
-  FE -->|REST JSON| API
-  API --> DB
-  API --> AI
-```
-
-**State saat ini:** garis `API → DB` dan `API → AI` belum aktif; `API` pakai in-memory + rule-based chat.
-
----
-
-## Dokumentasi terkait
-
-- [BACKEND.md](./BACKEND.md) — penjelasan mendalam tiap file backend
-- [api-docs.md](./api-docs.md) — referensi endpoint
-- [CARA_MENJALANKAN.md](./CARA_MENJALANKAN.md) — cara run project
+Lihat [DEPLOYMENT.md](./DEPLOYMENT.md) untuk langkah detail.
