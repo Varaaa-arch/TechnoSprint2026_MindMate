@@ -26,30 +26,84 @@ RECOMMENDATIONS_BY_MOOD = {
 }
 
 
+LOW_MOOD = frozenset({"sedih", "stres", "cemas", "marah"})
+NEG_EMOTIONS = frozenset({"anxiety", "burnout", "sad", "anger"})
+
+
+def _rule_low_weekday(history: list) -> str | None:
+    """Hari dalam seminggu yang paling sering mood rendah (min 2 kejadian)."""
+    low_counts: Counter[int] = Counter(
+        e.entry_date.weekday() for e in history if e.mood in LOW_MOOD
+    )
+    if not low_counts:
+        return None
+    wd, count = low_counts.most_common(1)[0]
+    if count >= 2:
+        return f"Mood kamu cenderung lebih rendah di hari {DAY_NAMES[wd]} ({count}x dalam 2 minggu terakhir)."
+    return None
+
+
+def _rule_consecutive_negative_chat(user_id: str, store) -> str | None:
+    """N hari berturut-turut dengan emotion negatif dari chat."""
+    messages = store.get_chat_history(user_id, limit=50)
+    # Ambil emotion per hari (hari paling baru dulu)
+    by_date: dict[date, list[str]] = {}
+    for m in messages:
+        if m.role == "assistant" and m.emotion:
+            d = m.created_at.date()
+            by_date.setdefault(d, []).append(m.emotion)
+
+    # Hitung streak hari berturut dengan mayoritas emosi negatif
+    today = date.today()
+    streak = 0
+    for i in range(len(by_date)):
+        d = today - timedelta(days=i)
+        emotions = by_date.get(d, [])
+        if not emotions:
+            break
+        neg_count = sum(1 for e in emotions if e in NEG_EMOTIONS)
+        if neg_count / len(emotions) >= 0.5:
+            streak += 1
+        else:
+            break
+
+    if streak >= 2:
+        dominant = Counter(
+            e for d in list(by_date.keys())[:streak]
+            for e in by_date[d] if e in NEG_EMOTIONS
+        ).most_common(1)
+        emotion_label = dominant[0][0] if dominant else "negatif"
+        label_id = {"anxiety": "cemas", "burnout": "kelelahan", "sad": "sedih", "anger": "marah"}.get(emotion_label, emotion_label)
+        return f"{streak} hari berturut-turut kamu terdeteksi merasa {label_id} dalam percakapan. Pertimbangkan istirahat atau bicara dengan seseorang."
+    return None
+
+
 def build_insights(user_id: str) -> InsightResponse:
     store = get_repository()
     stats = store.get_mood_stats(user_id)
     history = store.get_mood_history(user_id, days=14)
     highlights: list[str] = []
 
+    # Rule 1: streak pencatatan
     if stats["streak_days"] >= 3:
-        highlights.append(f"Kamu sudah mencatat mood {stats['streak_days']} hari berturut-turut.")
-    if stats["positive_percent"] >= 50:
-        highlights.append(f"{stats['positive_percent']}% entri minggu ini bersifat positif.")
-    elif history:
-        highlights.append("Beberapa hari terakhir mood cenderung rendah — jangan ragu untuk istirahat.")
+        highlights.append(f"Kamu sudah mencatat mood {stats['streak_days']} hari berturut-turut. Konsistensi yang bagus!")
 
-    if history:
-        by_weekday: Counter[int] = Counter()
-        for entry in history:
-            by_weekday[entry.entry_date.weekday()] += 1
-        low_days = [
-            DAY_NAMES[wd]
-            for wd, _ in by_weekday.most_common()
-            if any(e.entry_date.weekday() == wd and MOOD_SCORES.get(e.mood, 3) <= 2 for e in history)
-        ]
-        if low_days:
-            highlights.append(f"Mood kamu cenderung lebih rendah di hari {low_days[0]}.")
+    # Rule 2: hari dengan mood rendah berulang
+    low_day = _rule_low_weekday(history)
+    if low_day:
+        highlights.append(low_day)
+
+    # Rule 3: N hari berturut emosi negatif dari chat
+    consec = _rule_consecutive_negative_chat(user_id, store)
+    if consec:
+        highlights.append(consec)
+
+    # Rule 4: overall positif/negatif
+    if not low_day and not consec:
+        if stats["positive_percent"] >= 60:
+            highlights.append(f"{stats['positive_percent']}% mood kamu minggu ini bersifat positif. Pertahankan!")
+        elif stats["total_entries"] >= 3:
+            highlights.append("Beberapa hari terakhir mood cenderung rendah — jangan ragu untuk istirahat sejenak.")
 
     if not highlights:
         highlights.append("Mulai catat mood harian untuk mendapatkan insight yang lebih personal.")
