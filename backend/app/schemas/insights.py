@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, Field
 
 
@@ -27,3 +29,14 @@ class RecommendationItem(BaseModel):
 class RecommendationsResponse(BaseModel):
     user_id: str
     recommendations: list[RecommendationItem]
+
+
+class DailySummaryResponse(BaseModel):
+    user_id: str
+    summary_date: date
+    summary_text: str
+    mood_score_avg: float | None = None
+    dominant_emotion: str | None = None
+    highlights: list[str] = Field(default_factory=list)
+    generated_by: str = "rule_engine"
+    from_cache: bool = False

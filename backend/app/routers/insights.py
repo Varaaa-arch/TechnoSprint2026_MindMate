@@ -4,10 +4,12 @@ from fastapi import APIRouter, Depends
 
 from app.core.auth import get_current_user_id
 from app.schemas.insights import (
+    DailySummaryResponse,
     InsightResponse,
     RecommendationsResponse,
     WeeklyReportResponse,
 )
+from app.services.daily_summary_service import get_daily_summary
 from app.services.insights_service import (
     build_insights,
     build_recommendations,
@@ -15,6 +17,13 @@ from app.services.insights_service import (
 )
 
 router = APIRouter(prefix="/api/insights", tags=["insights"])
+
+
+@router.get("/daily-summary", response_model=DailySummaryResponse)
+def daily_summary(
+    user_id: Annotated[str, Depends(get_current_user_id)],
+) -> DailySummaryResponse:
+    return get_daily_summary(user_id)
 
 
 @router.get("/weekly", response_model=WeeklyReportResponse)

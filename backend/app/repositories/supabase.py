@@ -216,6 +216,20 @@ class SupabaseRepository:
         response = self._rpc("get_mood_trend", {"p_user_id": user_id, "p_days": days})
         return response.data or []
 
+    def get_daily_summary(self, user_id: str, summary_date: date) -> dict | None:
+        try:
+            response = (
+                self._db.table("daily_summaries")
+                .select("*")
+                .eq("user_id", user_id)
+                .eq("summary_date", summary_date.isoformat())
+                .limit(1)
+                .execute()
+            )
+            return response.data[0] if response.data else None
+        except Exception:
+            return None
+
     def upsert_daily_summary(
         self,
         user_id: str,

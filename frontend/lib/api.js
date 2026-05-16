@@ -83,6 +83,10 @@ class ApiClient {
     return this.request("/api/insights/recommendations");
   }
 
+  async getDailySummary() {
+    return this.request("/api/insights/daily-summary");
+  }
+
   async getMe() {
     return this.request("/api/auth/me");
   }

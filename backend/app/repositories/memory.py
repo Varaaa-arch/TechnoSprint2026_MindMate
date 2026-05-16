@@ -24,6 +24,7 @@ def _utcnow() -> datetime:
 class MemoryRepository:
     _chats: dict[str, list[ChatRecord]] = field(default_factory=lambda: defaultdict(list))
     _moods: dict[str, list[MoodRecord]] = field(default_factory=lambda: defaultdict(list))
+    _summaries: dict[str, dict] = field(default_factory=dict)  # key: "user_id:date"
 
     def ensure_profile(
         self,
@@ -135,3 +136,32 @@ class MemoryRepository:
             "average_score": round(sum(scores) / len(scores), 2),
             "dominant_mood": dominant,
         }
+
+    def get_daily_summary(self, user_id: str, summary_date: date) -> dict | None:
+        return self._summaries.get(f"{user_id}:{summary_date.isoformat()}")
+
+    def upsert_daily_summary(
+        self,
+        user_id: str,
+        summary_date: date,
+        summary_text: str,
+        *,
+        mood_score_avg: float | None = None,
+        dominant_emotion: str | None = None,
+        highlights: list | None = None,
+        generated_by: str = "rule_engine",
+    ) -> dict:
+        import uuid
+        key = f"{user_id}:{summary_date.isoformat()}"
+        row = {
+            "id": self._summaries.get(key, {}).get("id", str(uuid.uuid4())),
+            "user_id": user_id,
+            "summary_date": summary_date.isoformat(),
+            "summary_text": summary_text,
+            "mood_score_avg": mood_score_avg,
+            "dominant_emotion": dominant_emotion,
+            "highlights": highlights or [],
+            "generated_by": generated_by,
+        }
+        self._summaries[key] = row
+        return row

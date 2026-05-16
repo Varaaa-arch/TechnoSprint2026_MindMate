@@ -40,3 +40,17 @@ class DataRepository(Protocol):
     def get_mood_history(self, user_id: str, days: int = 30) -> list[MoodRecord]: ...
 
     def get_mood_stats(self, user_id: str) -> dict: ...
+
+    def get_daily_summary(self, user_id: str, summary_date: date) -> dict | None: ...
+
+    def upsert_daily_summary(
+        self,
+        user_id: str,
+        summary_date: date,
+        summary_text: str,
+        *,
+        mood_score_avg: float | None = None,
+        dominant_emotion: str | None = None,
+        highlights: list | None = None,
+        generated_by: str = "rule_engine",
+    ) -> dict: ...
