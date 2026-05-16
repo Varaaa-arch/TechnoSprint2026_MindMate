@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import AuthGuard from "../components/AuthGuard";
+import DashboardSkeleton from "../components/DashboardSkeleton";
+import { useToast } from "../components/Toast";
 import api from "../../lib/api";
 import {
   Chart as ChartJS,
@@ -49,6 +51,8 @@ export default function DashboardPage() {
   const [daily, setDaily]     = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { toast, showToast } = useToast();
+
   useEffect(() => {
     Promise.allSettled([
       api.getWeeklyReport(),
@@ -58,10 +62,13 @@ export default function DashboardPage() {
       api.getDailySummary(),
     ]).then(([w, i, r, s, d]) => {
       if (w.status === "fulfilled") setWeekly(w.value);
+      else showToast("Gagal memuat data tren mingguan.");
       if (i.status === "fulfilled") setInsights(i.value);
       if (r.status === "fulfilled") setRecs(r.value);
       if (s.status === "fulfilled") setStats(s.value);
       if (d.status === "fulfilled") setDaily(d.value);
+      if ([w, i, r, s, d].every((x) => x.status === "rejected"))
+        showToast("Tidak dapat terhubung ke server. Pastikan backend berjalan.");
       setLoading(false);
     });
   }, []);
@@ -140,9 +147,7 @@ export default function DashboardPage() {
         </header>
 
         {loading ? (
-          <div className="flex items-center justify-center py-32 text-slate-400 text-sm font-medium">
-            Memuat data...
-          </div>
+          <DashboardSkeleton />
         ) : (
           <>
             {/* Stat Cards */}
@@ -278,6 +283,7 @@ export default function DashboardPage() {
         )}
       </div>
     </div>
+    {toast}
     </AuthGuard>
   );
 }

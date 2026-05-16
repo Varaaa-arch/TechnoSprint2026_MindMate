@@ -15,6 +15,7 @@ import { Line } from "react-chartjs-2";
 import Navbar from "../components/Navbar";
 import AuthGuard from "../components/AuthGuard";
 import Link from "next/link";
+import { useToast } from "../components/Toast";
 import api from "../../lib/api";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
@@ -51,6 +52,7 @@ export default function MoodPage() {
   const [saving, setSaving]       = useState(false);
   const [history, setHistory]     = useState([]);
   const [stats, setStats]         = useState(null);
+  const { toast, showToast }      = useToast();
 
   /* load history + stats dari API */
   useEffect(() => {
@@ -89,7 +91,7 @@ export default function MoodPage() {
       setNote("");
       setSelected(null);
     } catch {
-      /* gagal simpan */
+      showToast("Gagal menyimpan mood. Coba lagi.");
     } finally {
       setSaving(false);
     }
@@ -327,6 +329,7 @@ export default function MoodPage() {
           </div>
         </div>
       </footer>
+      {toast}
     </div>
     </AuthGuard>
   );
