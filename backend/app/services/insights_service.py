@@ -17,12 +17,41 @@ from app.repositories import get_repository
 DAY_NAMES = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 WEEK_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]
 
-RECOMMENDATIONS_BY_MOOD = {
-    "stres": ("breathing", "Latihan Pernapasan", "Coba teknik 4-7-8 selama 2 menit untuk menurunkan stres."),
-    "sedih": ("journaling", "Journaling Singkat", "Tulis 3 hal yang kamu syukuri hari ini."),
-    "cemas": ("breathing", "Grounding 5-4-3-2-1", "Sebut 5 hal yang kamu lihat, 4 yang kamu sentuh, dan seterusnya."),
-    "senang": ("exercise", "Pertahankan Momentum", "Manfaatkan energi positif dengan aktivitas ringan 15 menit."),
-    "tenang": ("mindfulness", "Mindful Walk", "Jalan santai 10 menit sambil fokus pada napas."),
+# (type, title, description, duration_minutes)
+MOOD_RECS: dict[str, list[tuple]] = {
+    "sedih": [
+        ("journaling", "Journaling Perasaan", "Tulis apa yang kamu rasakan tanpa filter — tidak perlu rapi, cukup jujur.", 10),
+        ("exercise",   "Jalan Kaki Singkat",  "Gerakan ringan 10 menit terbukti membantu mengangkat mood.", 10),
+    ],
+    "stres": [
+        ("breathing",  "Teknik 4-7-8",        "Tarik napas 4 detik, tahan 7 detik, hembuskan 8 detik. Ulangi 4x.", 5),
+        ("exercise",   "Peregangan Ringan",   "Regangkan leher, bahu, dan punggung selama 5 menit untuk lepaskan ketegangan.", 5),
+    ],
+    "cemas": [
+        ("breathing",  "Grounding 5-4-3-2-1", "Sebut 5 hal yang kamu lihat, 4 yang kamu sentuh, 3 yang kamu dengar, 2 yang kamu cium, 1 yang kamu rasakan.", 5),
+        ("mindfulness","Body Scan Singkat",   "Pejamkan mata, rasakan setiap bagian tubuh dari kepala ke kaki selama 5 menit.", 5),
+    ],
+    "marah": [
+        ("exercise",   "Olahraga Pelepas",    "Lari kecil atau lompat-lompat 5 menit untuk melepas energi marah secara fisik.", 5),
+        ("breathing",  "Napas Kotak",         "Tarik 4 detik, tahan 4 detik, hembuskan 4 detik, tahan 4 detik. Ulangi 5x.", 5),
+    ],
+    "senang": [
+        ("exercise",   "Pertahankan Momentum","Manfaatkan energi positif dengan aktivitas ringan 15 menit.", 15),
+        ("journaling", "Catat Momen Baik",    "Tulis 3 hal spesifik yang membuatmu senang hari ini agar mudah diingat kembali.", 5),
+    ],
+    "tenang": [
+        ("mindfulness","Mindful Walk",        "Jalan santai 10 menit sambil fokus penuh pada napas dan lingkungan sekitar.", 10),
+        ("journaling", "Refleksi Harian",     "Luangkan 5 menit untuk menulis satu hal yang kamu pelajari hari ini.", 5),
+    ],
+    "biasa": [
+        ("mindfulness","Check-in Diri",       "Tanyakan pada diri sendiri: apa yang benar-benar kamu butuhkan sekarang?", 5),
+    ],
+}
+
+# Mapping emotion dari chat ke mood key
+EMOTION_TO_MOOD: dict[str, str] = {
+    "sad": "sedih", "anxiety": "cemas", "burnout": "stres",
+    "anger": "marah", "happy": "senang", "calm": "tenang", "neutral": "biasa",
 }
 
 
@@ -147,49 +176,50 @@ def build_weekly_report(user_id: str) -> WeeklyReportResponse:
     )
 
 
+def _recs_for(mood_key: str, source: str, limit: int = 2) -> list[RecommendationItem]:
+    entries = MOOD_RECS.get(mood_key, MOOD_RECS["biasa"])
+    return [
+        RecommendationItem(
+            id=f"rec-{mood_key}-{i}",
+            type=rec_type,
+            title=title,
+            description=desc,
+            duration_minutes=dur,
+            reason=source,
+        )
+        for i, (rec_type, title, desc, dur) in enumerate(entries[:limit])
+    ]
+
+
 def build_recommendations(user_id: str) -> RecommendationsResponse:
     store = get_repository()
-    history = store.get_mood_history(user_id, days=7)
     items: list[RecommendationItem] = []
+    seen_types: set[str] = set()
 
+    # Signal 1 (prioritas tinggi): emotion terbaru dari chat
+    chats = store.get_chat_history(user_id, limit=20)
+    latest_emotion = next(
+        (m.emotion for m in reversed(chats) if m.role == "assistant" and m.emotion and m.emotion != "neutral"),
+        None,
+    )
+    if latest_emotion:
+        mood_key = EMOTION_TO_MOOD.get(latest_emotion, "biasa")
+        for item in _recs_for(mood_key, f"Terdeteksi dari percakapan: {latest_emotion}"):
+            if item.type not in seen_types:
+                items.append(item)
+                seen_types.add(item.type)
+
+    # Signal 2: mood tracker terbaru (tambah jika tipe belum ada)
+    history = store.get_mood_history(user_id, days=7)
     if history:
-        latest = history[0]
-        rec = RECOMMENDATIONS_BY_MOOD.get(latest.mood)
-        if rec:
-            rec_type, title, desc = rec
-            items.append(
-                RecommendationItem(
-                    id=f"rec-{latest.mood}",
-                    type=rec_type,
-                    title=title,
-                    description=desc,
-                    reason=f"Berdasarkan mood terakhir: {latest.mood}",
-                )
-            )
+        latest_mood = history[0].mood
+        for item in _recs_for(latest_mood, f"Berdasarkan mood terakhir: {latest_mood}"):
+            if item.type not in seen_types and len(items) < 3:
+                items.append(item)
+                seen_types.add(item.type)
 
-    chats = store.get_chat_history(user_id, limit=5)
-    for msg in reversed(chats):
-        if msg.role == "assistant" and msg.emotion in ("anxiety", "burnout"):
-            items.append(
-                RecommendationItem(
-                    id="rec-chat-stress",
-                    type="breathing",
-                    title="Istirahat Sejenak",
-                    description="Ambil 5 napas dalam perlahan sebelum melanjutkan aktivitas.",
-                    reason=f"Terdeteksi dari percakapan: {msg.emotion}",
-                )
-            )
-            break
-
+    # Fallback
     if not items:
-        items.append(
-            RecommendationItem(
-                id="rec-default",
-                type="mindfulness",
-                title="Check-in Harian",
-                description="Luangkan 2 menit untuk menilai perasaanmu dan catat di mood tracker.",
-                reason="Rekomendasi umum",
-            )
-        )
+        items = _recs_for("biasa", "Rekomendasi umum")
 
-    return RecommendationsResponse(user_id=user_id, recommendations=items)
+    return RecommendationsResponse(user_id=user_id, recommendations=items[:3])

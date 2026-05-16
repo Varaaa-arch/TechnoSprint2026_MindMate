@@ -219,8 +219,18 @@ export default function DashboardPage() {
                     {(recs?.recommendations ?? []).slice(0, 3).map((item) => (
                       <div key={item.id} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-start gap-3 hover:bg-white/20 transition-all">
                         <div className="flex-1">
-                          <p className="text-sm font-bold">{item.title}</p>
-                          <p className="text-xs text-indigo-300 mt-0.5 leading-relaxed">{item.description}</p>
+                          <div className="flex items-center justify-between gap-2 mb-0.5">
+                            <p className="text-sm font-bold">{item.title}</p>
+                            {item.duration_minutes && (
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-300 shrink-0">
+                                {item.duration_minutes} mnt
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-indigo-300 leading-relaxed">{item.description}</p>
+                          {item.reason && (
+                            <p className="text-[10px] text-indigo-400 mt-1.5 italic">{item.reason}</p>
+                          )}
                         </div>
                       </div>
                     ))}

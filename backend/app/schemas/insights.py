@@ -20,6 +20,7 @@ class RecommendationItem(BaseModel):
     type: str
     title: str
     description: str
+    duration_minutes: int | None = None
     reason: str | None = None
 
 
