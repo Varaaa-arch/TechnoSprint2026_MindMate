@@ -4,11 +4,11 @@
 
 | Lapisan | Teknologi | Status |
 |---------|-----------|--------|
-| Frontend | Next.js 15 (App Router) | ✅ Production-ready |
-| Backend | FastAPI (Python 3.10+) | ✅ Production-ready |
-| Database | Supabase (PostgreSQL) | ✅ Schema + RLS sudah ada |
-| AI | OpenAI GPT-4o-mini | ✅ Aktif (fallback rule-based) |
-| Deploy | Vercel + Render | 🔜 Siap deploy |
+| Frontend | Next.js 15 (App Router) |  Production-ready |
+| Backend | FastAPI (Python 3.10+) |  Production-ready |
+| Database | Supabase (PostgreSQL) |  Schema + RLS sudah ada |
+| AI | OpenAI GPT-4o-mini |  Aktif (fallback rule-based) |
+| Deploy | Vercel + Render |  Siap deploy |
 
 ---
 

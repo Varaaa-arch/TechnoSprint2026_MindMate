@@ -1,6 +1,22 @@
 # MindMate — Dokumentasi
 
-## Mulai dari sini
+MindMate adalah aplikasi AI untuk pendampingan kesehatan mental — chat empatik, pelacakan mood harian, dan insight personal berbasis data nyata.
+
+Dibuat untuk TechnoSprint 2026 oleh tim SMK Negeri 1 Jakarta.
+
+---
+
+## Tim Pengembang
+
+| Nama | Sekolah | Peran |
+|------|---------|-------|
+| Muhammad Bimo Nurcahyo | SMK Negeri 1 Jakarta | Fullstack Developer |
+| Bizar Octo Givardi | SMK Negeri 1 Jakarta | Backend & AI Integration |
+| Muzayyin Arifin Nabhan | SMK Negeri 1 Jakarta | Frontend & UI/UX |
+
+---
+
+## Dokumentasi
 
 | Dokumen | Isi |
 |---------|-----|
@@ -13,19 +29,19 @@
 
 ---
 
-## Quick start
+## Quick Start
 
 ```bash
 # Backend
 cd backend
-cp .env.example .env   # isi OPENAI_API_KEY minimal
+cp .env.example .env        # isi OPENAI_API_KEY minimal
 source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 
 # Frontend (terminal baru)
 cd frontend
-cp .env.example .env.local   # isi NEXT_PUBLIC_API_URL=http://localhost:8000
+cp .env.example .env.local  # isi NEXT_PUBLIC_API_URL=http://localhost:8000
 npm install
 npm run dev
 ```
@@ -35,14 +51,23 @@ npm run dev
 
 ---
 
-## Fitur yang sudah jalan
+## Fitur
 
 | Fitur | Keterangan |
 |-------|------------|
-| AI Chat | GPT-4o-mini, system prompt empatik Bahasa Indonesia |
-| Emotion + Stress Score | Structured JSON dari model, disimpan ke DB |
-| Mood Tracker | Catat mood harian, chart 7 hari, statistik real |
-| Dashboard | Data nyata dari API — trend, distribusi, insights |
-| Rule-based Insights | Deteksi hari mood rendah, streak emosi negatif |
+| AI Chat | GPT-4o-mini, system prompt empatik Bahasa Indonesia, non-diagnostic |
+| Emotion + Stress Score | Structured JSON dari model, disimpan ke database |
+| Mood Tracker | Catat mood harian, chart 7 hari, statistik real-time |
+| Dashboard | Semua data dari API — trend, distribusi, insights |
+| Rule-based Insights | Deteksi hari mood rendah berulang, streak emosi negatif |
 | Smart Recommendations | Berdasarkan emotion chat + mood terakhir, prioritas signal |
-| Daily AI Summary | Generate sekali sehari, cache di DB, fallback rule-based |
+| Daily AI Summary | Di-generate sekali sehari, di-cache di DB, fallback rule-based |
+
+---
+
+## Tech Stack
+
+- **Frontend** — Next.js 15, React 19, Tailwind CSS 4
+- **Backend** — FastAPI, Python 3.10+
+- **Database** — Supabase (PostgreSQL + Auth + RLS)
+- **AI** — OpenAI GPT-4o-mini
