@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import AuthGuard from "../components/AuthGuard";
 import DashboardSkeleton from "../components/DashboardSkeleton";
 import { useToast } from "../components/Toast";
+import { printWeeklyReport } from "../components/WeeklyPDFReport";
 import api from "../../lib/api";
 import {
   Chart as ChartJS,
@@ -144,6 +145,14 @@ export default function DashboardPage() {
               Analisis berdasarkan pola mood dan percakapan harian kamu.
             </p>
           </div>
+          {!loading && (
+            <button
+              onClick={() => printWeeklyReport({ weekly, stats, insights, daily })}
+              className="px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:border-indigo-500 hover:text-indigo-600 transition-all shadow-sm shrink-0"
+            >
+              Unduh Laporan PDF
+            </button>
+          )}
         </header>
 
         {loading ? (
