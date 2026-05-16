@@ -50,24 +50,27 @@ export default function MoodPage() {
   const [saved, setSaved]         = useState(false);
   const [saving, setSaving]       = useState(false);
   const [history, setHistory]     = useState([]);
+  const [stats, setStats]         = useState(null);
 
-  /* load history dari API */
+  /* load history + stats dari API */
   useEffect(() => {
     let active = true;
-    api.getMoodHistory(30)
-      .then((data) => {
-        if (!active) return;
-        // data bisa array langsung atau { history: [...] }
+    Promise.allSettled([
+      api.getMoodHistory(30),
+      api.getMoodStats(),
+    ]).then(([h, s]) => {
+      if (!active) return;
+      if (h.status === "fulfilled") {
+        const data = h.value;
         const list = Array.isArray(data) ? data : (data.history ?? data.entries ?? []);
-        // normalise: pastikan tiap entry punya field `date` dan `mood`
-        const normalised = list.map((h) => ({
-          date: h.entry_date ?? h.date ?? h.created_at?.split("T")[0] ?? "",
-          mood: h.mood,
-          note: h.note ?? "",
-        }));
-        setHistory(normalised);
-      })
-      .catch(() => { /* backend belum jalan */ });
+        setHistory(list.map((e) => ({
+          date: e.entry_date ?? e.date ?? e.created_at?.split("T")[0] ?? "",
+          mood: e.mood,
+          note: e.note ?? "",
+        })));
+      }
+      if (s.status === "fulfilled") setStats(s.value);
+    });
     return () => { active = false; };
   }, []);
 
@@ -79,30 +82,18 @@ export default function MoodPage() {
       await api.saveMood({ mood: selected, note, entry_date: today });
       const entry = { date: today, mood: selected, note };
       setHistory((prev) => [entry, ...prev.filter((h) => h.date !== today)]);
+      // refresh stats
+      api.getMoodStats().then((s) => setStats(s)).catch(() => {});
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
       setNote("");
       setSelected(null);
     } catch {
-      /* gagal simpan — bisa tambah toast error di sini */
+      /* gagal simpan */
     } finally {
       setSaving(false);
     }
   };
-
-  /* streak hitung */
-  const streak = (() => {
-    let count = 0;
-    const today = new Date();
-    for (let i = 0; i < 30; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      const key = d.toISOString().split("T")[0];
-      if (history.find((h) => h.date === key)) count++;
-      else break;
-    }
-    return count;
-  })();
 
   /* chart data */
   const weekScores = getWeekScores(history);
@@ -250,20 +241,33 @@ export default function MoodPage() {
             </div>
           </div>
 
-          {/* Statistik */}
+          {/* Statistik dari API */}
           <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-start gap-3">
             <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <div>
-              <p className="text-xs font-bold text-indigo-700 mb-1">Statistik Minggu Ini</p>
-              <p className="text-xs text-indigo-600 leading-relaxed">
-                {streak > 0
-                  ? `Kamu telah mencatat mood selama ${streak} hari berturut-turut! Hebat!`
-                  : "Mulai catat moodmu hari ini untuk membangun kebiasaan positif!"}
-              </p>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-indigo-700 mb-2">Statistik Kamu</p>
+              {stats ? (
+                <div className="flex gap-4">
+                  <div className="text-center">
+                    <p className="text-lg font-black text-indigo-700">{stats.streak_days}</p>
+                    <p className="text-[10px] text-indigo-500">Streak</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-black text-indigo-700">{stats.positive_percent}%</p>
+                    <p className="text-[10px] text-indigo-500">Positif</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-black text-indigo-700">{stats.total_entries}</p>
+                    <p className="text-[10px] text-indigo-500">Total</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-indigo-600">Mulai catat moodmu hari ini!</p>
+              )}
             </div>
           </div>
         </div>
