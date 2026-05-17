@@ -136,7 +136,7 @@ function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-blue-50 via-white to-indigo-100">
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-linear-to-br from-blue-50 via-white to-indigo-100">
 
       {/* Card */}
       <div className="relative w-full max-w-sm bg-white rounded-3xl p-7 shadow-xl border border-blue-100">
