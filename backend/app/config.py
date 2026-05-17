@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     debug: bool = False
 
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,https://mind-mate-teal.vercel.app"
 
     supabase_url: str | None = None
     supabase_service_role_key: str | None = None
