@@ -92,8 +92,9 @@ async def get_current_user(
     if credentials and credentials.credentials:
         return verify_access_token(credentials.credentials)
 
-    if not settings.require_auth and x_dev_user_id:
-        return AuthUser(id=x_dev_user_id, email=None)
+    if not settings.require_auth:
+        dev_id = x_dev_user_id or "anonymous"
+        return AuthUser(id=dev_id, email=None)
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
